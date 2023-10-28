@@ -1,0 +1,6 @@
+.signup-main-container {
+    background-image: url(../../images/hell-background.png);
+    height: 100vh; 
+}
+
+/* inherets styles from form-flow-flex in LoginForm.css */

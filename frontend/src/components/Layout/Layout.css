@@ -1,0 +1,9 @@
+.main-content-space {
+    flex-grow: 1; 
+    transition: transform 0.3s ease;
+    transform: translateX(0);
+}
+
+.main-content-space-push-right {
+    transform: translateX(-35rem);
+}

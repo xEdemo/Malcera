@@ -1,0 +1,31 @@
+.icon-access-left-sidebar,
+.icon-access-right-sidebar {
+    width: 40px;
+    height: 40px;
+    color: var(--theme-grey-o-200);
+    cursor: pointer;
+}
+
+.game-main-header {
+    display: flex;
+    justify-content: space-between;
+    height: 6rem;
+}
+
+.left-game-header-container,
+.right-game-header-container {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    
+}
+
+.left-game-header-container {
+    margin: 1rem 0rem 1rem 1.5rem;
+}
+
+.right-game-header-container {
+    margin: 1rem 1.5rem 1rem 0rem;
+}
+
+

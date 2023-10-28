@@ -1,0 +1,37 @@
+.login-main-container {
+    background-image: url(../../images/hell-background.png);
+    height: 100vh; 
+}
+
+.form-flow-flex {
+    height: auto;
+    width: 35rem;
+    margin-bottom: 0rem;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    background-color: var(--theme-background-o-main);
+    max-height: 60rem;
+    border-radius: 2rem;
+}
+
+.form-flow-flex h2,
+.form-flow-flex p {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.form-flow-flex form {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.form-flow-flex form input {
+    margin-bottom: 2rem;
+}
+
+.form-flow-flex form button {
+    text-align: center;
+}
