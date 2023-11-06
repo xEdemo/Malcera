@@ -19,6 +19,8 @@ const authUserRouter = require('./routes/userRoutes.js');
 const mobRouter = require('./routes/mobRoutes.js');
 const battleRouter = require('./routes/battleRoutes.js');
 const itemRouter = require('./routes/itemRoutes.js');
+const npcRouter = require('./routes/npcRoutes.js');
+const bookRouter = require('./routes/bookRoutes.js');
 
 app.use(helmet());
 app.use(cors());
@@ -32,6 +34,8 @@ app.use('/api/v1/user', authUserRouter);
 app.use('/api/v1/mob', mobRouter);
 app.use('/api/v1/battle', battleRouter);
 app.use('/api/v1/item', itemRouter);
+app.use('/api/v1/npc', npcRouter);
+app.use('/api/v1/book', bookRouter);
 
 // Error handlers
 app.use(notFound);
