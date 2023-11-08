@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const seasonController = require('../controllers/seasonController');
+const seasonController = require('../controllers/seasonController.js');
 
 // Get all seasons
 router.get('/', seasonController.getSeasons);
