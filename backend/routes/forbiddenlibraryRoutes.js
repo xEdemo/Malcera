@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const forbiddenLibraryController = require('../controllers/forbiddenlibraryController');
+const forbiddenLibraryController = require('../controllers/forbiddenLibraryController');
 
 // Create a new Forbidden Library
 router.post('/', forbiddenLibraryController.createForbiddenLibrary);
