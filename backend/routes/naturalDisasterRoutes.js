@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const naturalDisasterController = require('../controllers/naturaldisasterController');
+const naturalDisasterController = require('../controllers/naturalDisasterController.js');
 
 // Create a new natural disaster
 router.post('/', naturalDisasterController.createNaturalDisaster);
