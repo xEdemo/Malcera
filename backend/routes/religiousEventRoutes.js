@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const religiousEventController = require('../controllers/religiouseventController');
+const religiousEventController = require('../controllers/religiousEventController.js');
 
 // Create a new religious event
 router.post('/', religiousEventController.createReligiousEvent);
