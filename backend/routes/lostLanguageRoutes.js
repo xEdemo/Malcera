@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const lostLanguageController = require('../controllers/lostlanguageController');
+const lostLanguageController = require('../controllers/lostLanguageController.js');
 
 // Create a new Lost Language
 router.post('/', lostLanguageController.createLostLanguage);
