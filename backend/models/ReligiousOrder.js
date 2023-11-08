@@ -20,7 +20,7 @@ const ReligiousOrderSchema = new mongoose.Schema({
   },
   members: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Character',
+    ref: 'User',
   }],
   headquarters: {
     type: String,
@@ -40,7 +40,7 @@ const ReligiousOrderSchema = new mongoose.Schema({
   }],
   leader: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Character',
+    ref: 'User',
   },
 });
 
