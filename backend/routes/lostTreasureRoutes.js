@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const lostTreasureController = require('../controllers/lostTreasureController');
+const lostTreasureController = require('../controllers/lostTreasureController.js');
 
 // Create a new Lost Treasure
 router.post('/', lostTreasureController.createLostTreasure);
