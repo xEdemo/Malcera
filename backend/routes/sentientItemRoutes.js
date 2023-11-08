@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sentientItemController = require('../controllers/sentientItemController');
+const sentientItemController = require('../controllers/sentientItemController.js');
 
 // Create a new sentient item
 router.post('/', sentientItemController.createSentientItem);
