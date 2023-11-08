@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const blackMarketController = require('../controllers/lackMarketController');
+const blackMarketController = require('../controllers/blackMarketController');
 
 // Create a new Black Market
 router.post('/', blackMarketController.createBlackMarket);
