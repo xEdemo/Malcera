@@ -7,8 +7,8 @@ const {
     superAdmin
 } = require('../middleware/authMiddleware.js');
 
-const { createBook, getBookById } = require('../controllers/bookController.js');
+const { createBook } = require('../controllers/bookController.js');
 
-router.route('/').post([protect, superAdmin], createBook).get([protect, superAdmin], getBookById).get([protect, superAdmin], getBookById);
-console.log("fuckem all")
+router.route('/').post([protect, superAdmin], createBook);
+
 module.exports = router;
