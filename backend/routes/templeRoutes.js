@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const templeController = require('../controllers/templeController');
+const templeController = require('../controllers/templeController.js');
 
 // Create a new temple
 router.post('/', templeController.createTemple);
