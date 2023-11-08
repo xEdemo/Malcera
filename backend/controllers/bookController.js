@@ -33,6 +33,7 @@ const getAllBooks = async (req, res) => {
 // @desc    Get Book by ID
 // @route   GET /api/v1/book/:bookId
 // @access  Private (Admin)
+// ** Query may be better here instead of ID
 const getBookById = async (req, res) => {
     const bookId = req.params.bookId;
     const book = await Book.findById(bookId);
@@ -47,7 +48,7 @@ const getBookById = async (req, res) => {
 // @route   PUT /api/v1/book/:bookId
 // @access  Private (Super Admin)
 const updateBook = async (req, res) => {
-    const bookId = req.params.bookId;
+    const bookId = req.params;
     const { title, author, genre, content } = req.body;
 
     const filter = { _id: bookId };
@@ -69,7 +70,7 @@ const updateBook = async (req, res) => {
 // @route   DELETE /api/v1/book/:bookId
 // @access  Private (Super Admin)
 const deleteBook = async (req, res) => {
-    const bookId = req.params.bookId;
+    const bookId = req.params;
     const deletedBook = await Book.findByIdAndDelete(bookId);
 
     if (!deletedBook) {
