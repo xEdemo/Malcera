@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const weatherController = require('../controllers/weatherController');
+const weatherController = require('../controllers/weatherController.js');
 
 // Create a new weather condition
 router.post('/', weatherController.createWeather);
