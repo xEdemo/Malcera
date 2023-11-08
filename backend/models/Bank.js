@@ -16,7 +16,7 @@ const BankSchema = new mongoose.Schema({
   currency: {
     type: String,
     required: true,
-    default: 'Gold Coins', // The default in-game currency
+    default: 'Joss Paper', // The default in-game currency
   },
   vaultCapacity: {
     type: Number,
