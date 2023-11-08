@@ -33,7 +33,7 @@ const ReligiousEventSchema = new mongoose.Schema({
   participants: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Player', // Reference to players or characters involved
+      ref: 'User', // Reference to players or characters involved
     },
   ],
   religiousOrder: {
