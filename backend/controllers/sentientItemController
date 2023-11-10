@@ -1,0 +1,68 @@
+const SentientItem = require('../models/SentientItem');
+
+// Create a new sentient item
+const createSentientItem = async (req, res) => {
+  try {
+    const sentientItem = await SentientItem.create(req.body);
+    return res.status(201).json(sentientItem);
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred while creating the sentient item.' });
+  }
+};
+
+// Get all sentient items
+const getAllSentientItems = async (req, res) => {
+  try {
+    const sentientItems = await SentientItem.find();
+    return res.json(sentientItems);
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred while fetching sentient items.' });
+  }
+};
+
+// Get a sentient item by ID
+const getSentientItemById = async (req, res) => {
+  try {
+    const sentientItem = await SentientItem.findById(req.params.id);
+    if (!sentientItem) {
+      return res.status(404).json({ error: 'Sentient item not found.' });
+    }
+    return res.json(sentientItem);
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred while fetching the sentient item.' });
+  }
+};
+
+// Update a sentient item by ID
+const updateSentientItem = async (req, res) => {
+  try {
+    const sentientItem = await SentientItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!sentientItem) {
+      return res.status(404).json({ error: 'Sentient item not found.' });
+    }
+    return res.json(sentientItem);
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred while updating the sentient item.' });
+  }
+};
+
+// Delete a sentient item by ID
+const deleteSentientItem = async (req, res) => {
+  try {
+    const sentientItem = await SentientItem.findByIdAndDelete(req.params.id);
+    if (!sentientItem) {
+      return res.status(404).json({ error: 'Sentient item not found.' });
+    }
+    return res.json({ message: 'Sentient item deleted successfully.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred while deleting the sentient item.' });
+  }
+};
+
+module.exports = {
+  createSentientItem,
+  getAllSentientItems,
+  getSentientItemById,
+  updateSentientItem,
+  deleteSentientItem,
+};
