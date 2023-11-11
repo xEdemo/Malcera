@@ -5,6 +5,7 @@ const Inventory = require('./Inventory.js');
 const Item = require('./Item.js');
 const Npc = require('./Npc.js');
 const Book = require('./Book.js');
+const Mount = require('./Mount.js')
 
 module.exports = {
     User,
@@ -13,5 +14,6 @@ module.exports = {
     Inventory,
     Item,
     Npc,
-    Book
+    Book,
+    Mount
 };

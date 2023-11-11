@@ -1,17 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const mountController = require('../controllers/mountController');
+
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
+
+const {
+    createMount,
+    getAllMounts,
+    updateMount,
+    deleteMount,
+} = require('../controllers/mountController.js');
 
 // Create a new mount
-router.post('/', mountController.createMount);
-
-// Get all mounts
-router.get('/', mountController.getAllMounts);
-
-// Update a mount by ID
-router.put('/:mountId', mountController.updateMount);
-
-// Delete a mount by ID
-router.delete('/:mountId', mountController.deleteMount);
+router
+    .route('/')
+    .post([protect, superAdmin], createMount)
+    .get([protect, admin], getAllMounts);
+router
+    .route('/:mountId')
+    .put([protect, superAdmin], updateMount)
+    .delete([protect, superAdmin], deleteMount);
 
 module.exports = router;

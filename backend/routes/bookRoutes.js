@@ -10,5 +10,5 @@ const {
 const { createBook } = require('../controllers/bookController.js');
 
 router.route('/').post([protect, superAdmin], createBook);
-console.log('hi');
+
 module.exports = router;

@@ -35,7 +35,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const pickaxeItem = await Item.findById(pickaxeId);
     const breadCrumbsItem = await Item.findById(breadCrumbsId);
 
-    const numberOfStarterHatchets = 15;
+    const numberOfStarterHatchets = 5;
     const numberOfStarterPickaxes = 1;
     const numberOfStarterBreadCrumbs = 50;
 
@@ -113,7 +113,7 @@ const registerUser = asyncHandler(async (req, res) => {
             armourRating: breadCrumbsItem.armourRating,
             weaponPower: breadCrumbsItem.weaponPower,
         });
-    } else {
+    } else if (!breadCrumbsItem.stackable) {
         for (let i = 0; i < numberOfStarterBreadCrumbs; i++) {
             inventory.slots.push({
                 item: breadCrumbsItem._id,

@@ -39,7 +39,6 @@ const mountRouter = require('./routes/mountRoutes.js');
 //const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
 //const blackmarketRouter = require('./routes/blackMarketRoutes.js');
 
-
 app.use(helmet());
 app.use(cors());
 app.use(mongoSanitize());
@@ -58,6 +57,7 @@ app.use('/api/v1/npc', npcRouter);
 //app.use('/api/v1/weather', weatherRouter);
 app.use('/api/v1/book', bookRouter);
 app.use('/api/v1/mount', mountRouter);
+//app.use('/api/v1/weather', weatherRouter);
 //app.use('/api/v1/lost-treasures', lostTreasureRouter);
 //app.use('/api/v1/season', seasonRouter);
 //app.use('/api/v1/day-night', dayNightRouter);
@@ -71,7 +71,6 @@ app.use('/api/v1/mount', mountRouter);
 //app.use('/api/v1/demonic-contract', demoniccontractRouter);
 //app.use('/api/v1/natural-disasters', naturaldisasterRouter);
 //app.use('/api/v1/black-markets', blackmarketRouter);
-
 
 // Error handlers
 app.use(notFound);
