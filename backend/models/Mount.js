@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Define the Mount schema
-const mountSchema = new mongoose.Schema({
+const MountSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -22,7 +22,7 @@ const mountSchema = new mongoose.Schema({
 });
 
 // Create the Mount model
-const Mount = mongoose.model('Mount', mountSchema);
+const Mount = mongoose.model('Mount', MountSchema);
 
 module.exports = Mount;
 

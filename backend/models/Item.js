@@ -5,7 +5,6 @@ const ItemSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
-            unique: true,
         },
         description: {
             type: String,
@@ -14,7 +13,6 @@ const ItemSchema = new mongoose.Schema(
         image: {
             type: String,
             required: true,
-            unique: true,
         },
         stackable: {
             type: Boolean,

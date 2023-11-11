@@ -34,7 +34,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const hatchetItem = await Item.findById(hatchetId);
     const pickaxeItem = await Item.findById(pickaxeId);
     const breadCrumbsItem = await Item.findById(breadCrumbsId);
-
+    
     const numberOfStarterHatchets = 5;
     const numberOfStarterPickaxes = 1;
     const numberOfStarterBreadCrumbs = 50;
@@ -53,7 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
             armourRating: hatchetItem.armourRating,
             weaponPower: hatchetItem.weaponPower,
         });
-    } else {
+    } else if (!hatchetItem.stackable && numberOfStarterHatchets >= 1) {
         for (let i = 0; i < numberOfStarterHatchets; i++) {
             inventory.slots.push({
                 item: hatchetItem._id,
@@ -83,7 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
             armourRating: pickaxeItem.armourRating,
             weaponPower: pickaxeItem.weaponPower,
         });
-    } else {
+    } else if (!pickaxeItem.stackable && numberOfStarterPickaxes >= 1) {
         for (let i = 0; i < numberOfStarterPickaxes; i++) {
             inventory.slots.push({
                 item: pickaxeItem._id,
@@ -113,7 +113,7 @@ const registerUser = asyncHandler(async (req, res) => {
             armourRating: breadCrumbsItem.armourRating,
             weaponPower: breadCrumbsItem.weaponPower,
         });
-    } else if (!breadCrumbsItem.stackable) {
+    } else if (!breadCrumbsItem.stackable && numberOfStarterBreadCrumbs >= 1) {
         for (let i = 0; i < numberOfStarterBreadCrumbs; i++) {
             inventory.slots.push({
                 item: breadCrumbsItem._id,
@@ -156,7 +156,7 @@ const authUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    const inventory = await Inventory.findOne({ _id: user.inventory })
+    const inventory = await Inventory.findOne({ _id: user.inventory });
 
     if (user && (await user.matchPassword(password))) {
         createJWT(res, user._id);
