@@ -16,7 +16,7 @@ const createItem = async (req, res) => {
         weaponPower,
     } = req.body;
     if (!name || !description || !image) {
-        res.Status(StatusCodes.BAD_REQUEST);
+        res.status(StatusCodes.BAD_REQUEST);
         throw new Error(`Please fill out all required fields.`);
     }
 

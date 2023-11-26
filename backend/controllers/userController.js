@@ -30,11 +30,13 @@ const registerUser = asyncHandler(async (req, res) => {
     const hatchetId = '64cac3298525d56c05347d01';
     const pickaxeId = '64cbdded7ebd956606da7694';
     const breadCrumbsId = '64cbdea9de2266abdc3aa002';
+    const emptySlotId = '655ac0ef72adb7c251f09e80';
 
     const hatchetItem = await Item.findById(hatchetId);
     const pickaxeItem = await Item.findById(pickaxeId);
     const breadCrumbsItem = await Item.findById(breadCrumbsId);
-    
+    const emptySlotItem = await Item.findById(emptySlotId);
+
     const numberOfStarterHatchets = 5;
     const numberOfStarterPickaxes = 1;
     const numberOfStarterBreadCrumbs = 50;
@@ -128,6 +130,45 @@ const registerUser = asyncHandler(async (req, res) => {
                 weaponPower: breadCrumbsItem.weaponPower,
             });
         }
+    }
+
+    const totalExistingItems = inventory.slots.reduce((total, slot) => {
+        // Check if the slot is not an empty slot
+        if (
+            slot.item &&
+            slot.item.toString() !== emptySlotItem._id.toString()
+        ) {
+            return total + 1;
+        }
+        return total;
+    }, 0);
+
+    const emptySlotsNeeded = Math.max(0, 40 - totalExistingItems);
+
+    //console.log(totalExistingItems);
+
+    const emptySlots = Array.from(
+        { length: emptySlotsNeeded },
+        () => emptySlotItem
+    );
+    inventory.slots.push(...emptySlots);
+
+    const itemIndex = inventory.slots.findIndex((slot) => {
+        return slot.item && slot.item.toString() === pickaxeItem._id.toString();
+    });
+
+    const newSlotIndex = 10;
+
+    if (itemIndex !== -1) {
+        const movedItem = inventory.slots[itemIndex]; // Get the item to move
+        inventory.slots[itemIndex] = emptySlotItem; // Set the source slot to a pseudo item
+
+        // Swap operation - swap with the item in the target slot
+        const targetItem = inventory.slots[newSlotIndex];
+        inventory.slots[newSlotIndex] = movedItem;
+
+        //console.log('Moved Item:', movedItem);
+        //console.log('Target Slot:', targetItem);
     }
 
     await inventory.save();

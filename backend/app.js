@@ -38,6 +38,7 @@ const mountRouter = require('./routes/mountRoutes.js');
 //const demoniccontractRouter = require('./routes/demonicContractRoutes.js');
 //const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
 //const blackmarketRouter = require('./routes/blackMarketRoutes.js');
+const inventoryRouter = require('./routes/inventoryRoutes.js');
 
 app.use(helmet());
 app.use(cors());
@@ -71,6 +72,7 @@ app.use('/api/v1/mount', mountRouter);
 //app.use('/api/v1/demonic-contract', demoniccontractRouter);
 //app.use('/api/v1/natural-disasters', naturaldisasterRouter);
 //app.use('/api/v1/black-markets', blackmarketRouter);
+app.use('/api/v1/inventory', inventoryRouter);
 
 // Error handlers
 app.use(notFound);

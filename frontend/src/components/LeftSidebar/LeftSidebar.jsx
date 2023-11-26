@@ -2,7 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import { useSelector, useDispatch } from 'react-redux';
-import cloneDeep from 'lodash.clonedeep';
+import {
+    useUpdateInventoryOnDropMutation,
+    useGetInventoryQuery,
+} from '../../slices/inventory/inventoryApiSlice.js';
+import {
+    updateInventoryOnChange,
+    getInventory,
+} from '../../slices/inventory/inventorySlice.js';
 
 const inventoryRows = 8;
 const inventoryColumns = 5;
@@ -11,7 +18,7 @@ const inventorySlots = 40;
 const LeftSidebar = () => {
     const [isInventoryOpen, setIsInventoryOpen] = useState(false);
     const [inventoryHeight, setInventoryHeight] = useState(0);
-    const [inventoryItems, setInventoryItems] = useState({});
+    const [inventoryItems, setInventoryItems] = useState([]);
     const [draggedItem, setDraggedItem] = useState(null);
     const draggedItemRef = useRef(null);
     const [offsetX, setOffsetX] = useState(0);
@@ -22,21 +29,52 @@ const LeftSidebar = () => {
     const [isCharacterOpen, setIsCharacterOpen] = useState(false);
     const [characterHeight, setCharacterHeight] = useState(0);
 
+    const [onDrop, { onDropError }] = useUpdateInventoryOnDropMutation();
+    const { data: inventoryData, error } = useGetInventoryQuery();
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
 
+    const fetchInventoryData = async () => {
+        try {
+            const response = await dispatch(getInventory());
+            if (
+                response.payload &&
+                response.payload.updatedInventory &&
+                response.payload.updatedInventory.slots
+            ) {
+                setInventoryItems(response.payload.updatedInventory.slots);
+                setUpdatedInventoryItems(
+                    response.payload.updatedInventory.slots
+                );
+            }
+        } catch (error) {
+            console.error('Error fetching inventory', error);
+        }
+    };
+
+    const handleToggleInventory = async () => {
+        setIsInventoryOpen(!isInventoryOpen);
+
+        if (!isInventoryOpen) {
+            fetchInventoryData();
+        }
+    };
+
     const handleToggleCharacter = () => {
         setIsCharacterOpen(!isCharacterOpen);
-    }
-
-    const handleToggleInventory = () => {
-        setIsInventoryOpen(!isInventoryOpen);
     };
 
     const handleDragStart = (index, e) => {
         e.stopPropagation(); // Prevent other click events from triggering
+
+        //newIndexRef.current = null;
+
+        // keeps item from deleting
+        //setUpdatedInventoryItems(userInfo.inventory.slots || []);
+
         setDraggedItem(inventoryItems[index]);
         setInitialDragIndex(index);
 
@@ -72,7 +110,7 @@ const LeftSidebar = () => {
         }));
     };
 
-    const handleDragEnd = (e) => {
+    const handleDragEnd = async (e) => {
         if (!draggedItem || initialDragIndex === null) return;
 
         const mouseX = draggedItem.positionX + 24;
@@ -90,25 +128,34 @@ const LeftSidebar = () => {
         newIndex = Math.min(inventorySlots - 1, newIndex);
 
         if (isNaN(clampedRow) || isNaN(clampedColumn)) {
-        } else if (newIndex !== draggedItemRef.current) {
-            setUpdatedInventoryItems((prevItems) => {
-                const updatedItems = prevItems.map((item) => cloneDeep(item));
+            return;
+        }
 
-                console.log('newIndex:', newIndex);
+        try {
+            const updatedItems = [...updatedInventoryItems];
+            const tempItem = updatedItems[draggedItemRef.current];
 
-                if (updatedItems[initialDragIndex] !== undefined) {
-                    // Dragged item is not vacant, so perform swapping
-                    const tempItem = updatedItems[initialDragIndex];
-                    updatedItems[initialDragIndex] = updatedItems[newIndex];
-                    updatedItems[newIndex] = tempItem;
-                } else {
-                    // Dragged item is vacant, so move it to the vacant slot
-                    updatedItems[newIndex] = draggedItem;
-                    // Clear the source slot (dragged item)
-                    updatedItems[initialDragIndex] = null;
-                }
-                return updatedItems;
-            });
+            updatedItems[draggedItemRef.current] = updatedItems[newIndex];
+            updatedItems[newIndex] = tempItem;
+
+            // Immediately update the state with the correct positions
+            setUpdatedInventoryItems(updatedItems);
+
+            // Update the database only after the state has been updated
+            const res = await onDrop({
+                changedIndices: [draggedItemRef.current, newIndex],
+                updatedItems,
+            }).unwrap();
+
+            // Ensure the response is valid
+            if (res.updatedInventory && res.updatedInventory.slots) {
+                dispatch(updateInventoryOnChange(res.updatedInventory.slots));
+                console.log('API Response:', res);
+            } else {
+                console.error('Invalid response format from server:', res);
+            }
+        } catch (err) {
+            console.error('Error updating inventory', err);
         }
 
         e.target.style.cursor = 'grab';
@@ -118,28 +165,38 @@ const LeftSidebar = () => {
     };
 
     const handleTouchStart = (index, e) => {
-        e.stopPropagation();
-        setDraggedItem(inventoryItems[index]);
-        setInitialDragIndex(index);
+        if (e) {
+            e.stopPropagation();
+            setDraggedItem(inventoryItems[index]);
+            setInitialDragIndex(index);
 
-        const inventoryContainer = document.querySelector(
-            '.inventory-container'
-        );
-        const inventoryRect = inventoryContainer.getBoundingClientRect();
+            const inventoryContainer = document.querySelector(
+                '.inventory-container'
+            );
+            const inventoryRect = inventoryContainer.getBoundingClientRect();
 
-        const offsetX = e.touches[0].clientX - inventoryRect.left;
-        const offsetY = e.touches[0].clientY - inventoryRect.top;
+            const offsetX = e.touches[0].clientX - inventoryRect.left;
+            const offsetY = e.touches[0].clientY - inventoryRect.top;
 
-        setOffsetX(offsetX);
-        setOffsetY(offsetY);
-        draggedItemRef.current = index;
+            setOffsetX(offsetX);
+            setOffsetY(offsetY);
+            draggedItemRef.current = index;
 
-        e.target.style.cursor = 'grabbing';
+            e.target.style.cursor = 'grabbing';
+
+            inventoryContainer.addEventListener('touchmove', preventScroll, {
+                passive: false,
+            });
+        }
+    };
+
+    const preventScroll = (e) => {
+        e.preventDefault();
     };
 
     const handleTouchMove = (e) => {
         if (!draggedItem) return;
-        e.preventDefault();
+        //e.preventDefault();
 
         const inventoryContainer = document.querySelector(
             '.inventory-container'
@@ -155,15 +212,24 @@ const LeftSidebar = () => {
 
     useEffect(() => {
         setInventoryHeight(isInventoryOpen ? 424 : 0);
-        const pseudoItemsArray = Array.from({ length: inventorySlots }).fill({
-            isPseudoItem: true,
-        });
-        userInfo.inventory.slots.forEach((item, index) => {
-            pseudoItemsArray[index] = item;
-        });
-        setInventoryItems(pseudoItemsArray);
-        setUpdatedInventoryItems(pseudoItemsArray);
-    }, [isInventoryOpen, userInfo.inventory.slots]);
+        //setUpdatedInventoryItems(
+        //Array.from({ length: inventorySlots }).fill(null)
+        //);
+
+        //const userInventory = userInfo.inventory.slots || [];
+
+        if (
+            inventoryData &&
+            inventoryData.updatedInventory &&
+            inventoryData.updatedInventory.slots
+        ) {
+            // Update local state with the current inventory items
+            setInventoryItems(inventoryData.updatedInventory.slots);
+            setUpdatedInventoryItems(inventoryData.updatedInventory.slots);
+        } else if (error) {
+            console.error('Error fetching inventory', error);
+        }
+    }, [isInventoryOpen, inventoryData, error]);
 
     useEffect(() => {
         setCharacterHeight(isCharacterOpen ? 400 : 0);
@@ -188,23 +254,22 @@ const LeftSidebar = () => {
                         }}
                         onMouseMove={handleDrag}
                         onMouseUp={handleDragEnd}
+                        onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleDragEnd}
                     >
                         {/* Generate slots */}
-                        {Array.from({ length: inventorySlots }).map(
-                            (_, index) => {
-                                const inventoryItem =
-                                    updatedInventoryItems[index];
-                                return (
-                                    <div
-                                        key={index}
-                                        style={{
-                                            border: '1px solid var(--theme-grey-o-400)',
-                                            width: '48px',
-                                            height: '48px',
-                                        }}
-                                    >
+                        {updatedInventoryItems.map((inventoryItem, index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    border: '1px solid var(--theme-grey-o-400)',
+                                    width: '48px',
+                                    height: '48px',
+                                }}
+                            >
+                                {inventoryItem?.name !== 'Empty Slot' && (
+                                    <>
                                         <img
                                             src={inventoryItem?.image}
                                             alt={inventoryItem?.name}
@@ -223,19 +288,18 @@ const LeftSidebar = () => {
                                                         ? `translate(${draggedItem.positionX}px, ${draggedItem.positionY}px)`
                                                         : 'none',
                                             }}
-                                            onMouseDown={(e) => {
-                                                //e.preventDefault();
-                                                handleDragStart(index, e);
-                                            }}
-                                            onTouchStart={(e) => {
-                                                handleTouchStart(index, e);
-                                            }}
+                                            onMouseDown={(e) =>
+                                                handleDragStart(index, e)
+                                            }
+                                            onTouchStart={(e) =>
+                                                handleTouchStart(index, e)
+                                            }
                                         />
                                         {inventoryItem?.quantity}
-                                    </div>
-                                );
-                            }
-                        )}
+                                    </>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 )}
                 <p onClick={handleToggleCharacter}>
