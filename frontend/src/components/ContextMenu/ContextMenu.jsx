@@ -1,24 +1,28 @@
-const ContextMenu = ({ contextMenu }) => {
+import { memo } from 'react';
+
+const ContextMenu = ({ contextMenu, itemName, splitStackableItem }) => {
     return (
         <>
             {contextMenu.show && (
                 <div
-                    className="context-menu-main"
+                    className={`context-menu-main ${
+                        splitStackableItem ? 'stackable' : ''
+                    }`}
                     style={{
                         top: `${contextMenu.y}px`,
                         left: `${contextMenu.x}px`,
                     }}
                 >
                     <p>Context Menu</p>
-                    <p>Hi</p>
+                    {itemName && <p>{itemName}</p>}
+                    {splitStackableItem && <p>Split</p>}
                     <p>Bye &#8250;</p>
-                    <p>ron</p>
                 </div>
             )}
         </>
     );
 };
-export default ContextMenu;
+export default memo(ContextMenu);
 
 // How to use:
 // import { ContextMenu, useContextMenu } from '../../components'

@@ -6,14 +6,15 @@ const useContextMenu = () => {
         show: false,
         x: 0,
         y: 0,
+        index: null
     };
 
     const [contextMenu, setContextMenu] = useState(initialContextMenu);
 
-    const showContextMenu = (e) => {
+    const showContextMenu = (index, e) => {
         e.preventDefault();
         const { pageX, pageY } = e;
-        setContextMenu({ show: true, x: pageX, y: pageY });
+        setContextMenu({ show: true, x: pageX, y: pageY, index });
     };
 
     const hideContextMenu = () => setContextMenu(initialContextMenu);

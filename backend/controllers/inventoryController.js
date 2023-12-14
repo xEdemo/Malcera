@@ -50,7 +50,15 @@ const getInventory = async (req, res) => {
     res.status(StatusCodes.OK).json({ updatedInventory: inventory});
 }
 
+// @desc    Updates Inventory on Drag
+// @route   PUT /api/v1/inventory/combine 
+// @access  Private
+const combineStackableItems = async (req, res) => {
+    res.status(StatusCodes.OK).json({ msg: `YUP` })
+}
+
 module.exports = {
     updateInventoryOnDrop,
     getInventory,
+    combineStackableItems,
 };

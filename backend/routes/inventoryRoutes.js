@@ -10,9 +10,11 @@ const {
 const {
     updateInventoryOnDrop,
     getInventory,
+    combineStackableItems,
 } = require('../controllers/inventoryController.js');
 
 router.route('/').get([protect], getInventory);
 router.route('/on-drop').put([protect], updateInventoryOnDrop);
+router.route('/combine').put([protect], combineStackableItems);
 
 module.exports = router;

@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import { useSelector, useDispatch } from 'react-redux';
@@ -10,27 +11,42 @@ import {
     updateInventoryOnChange,
     getInventory,
 } from '../../slices/inventory/inventorySlice.js';
+import debounce from 'lodash.debounce';
+import { ContextMenu, useContextMenu } from '../../components';
+import {
+    inventoryReducer,
+    sidebarReducer,
+} from '../../reducers/LeftSiderbarReducer.js';
 
 const inventoryRows = 8;
 const inventoryColumns = 5;
 const inventorySlots = 40;
 
 const LeftSidebar = () => {
-    const [isInventoryOpen, setIsInventoryOpen] = useState(false);
-    const [inventoryHeight, setInventoryHeight] = useState(0);
-    const [inventoryItems, setInventoryItems] = useState([]);
+    const [sidebarState, dispatchSidebar] = useReducer(sidebarReducer, {
+        isInventoryOpen: false,
+        isCharacterOpen: false,
+    });
+
+    const [inventoryState, dispatchInventory] = useReducer(inventoryReducer, {
+        inventoryItems: [],
+        updatedInventoryItems: [],
+    });
+    const inventoryItems = inventoryState.inventoryItems;
+    const updatedInventoryItems = inventoryState.updatedInventoryItems;
+
     const [draggedItem, setDraggedItem] = useState(null);
     const draggedItemRef = useRef(null);
     const [offsetX, setOffsetX] = useState(0);
     const [offsetY, setOffsetY] = useState(0);
-    const [updatedInventoryItems, setUpdatedInventoryItems] = useState([]);
     const [initialDragIndex, setInitialDragIndex] = useState(null);
-
-    const [isCharacterOpen, setIsCharacterOpen] = useState(false);
-    const [characterHeight, setCharacterHeight] = useState(0);
 
     const [onDrop, { onDropError }] = useUpdateInventoryOnDropMutation();
     const { data: inventoryData, error } = useGetInventoryQuery();
+
+    const { contextMenu, showContextMenu } = useContextMenu();
+    const [contextMenuItemName, setContextMenuItemName] = useState('');
+    const [checkStackable, setCheckStackable] = useState(false);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -45,10 +61,10 @@ const LeftSidebar = () => {
                 response.payload.updatedInventory &&
                 response.payload.updatedInventory.slots
             ) {
-                setInventoryItems(response.payload.updatedInventory.slots);
-                setUpdatedInventoryItems(
-                    response.payload.updatedInventory.slots
-                );
+                dispatchInventory({
+                    type: 'SET_INVENTORY_ITEMS',
+                    payload: response.payload.updatedInventory.slots,
+                });
             }
         } catch (error) {
             console.error('Error fetching inventory', error);
@@ -56,58 +72,60 @@ const LeftSidebar = () => {
     };
 
     const handleToggleInventory = async () => {
-        setIsInventoryOpen(!isInventoryOpen);
+        dispatchSidebar({ type: 'TOGGLE_INVENTORY' });
+        setContextMenuItemName('');
+        setCheckStackable(false);
 
-        if (!isInventoryOpen) {
-            fetchInventoryData();
+        if (!sidebarState.isInventoryOpen) {
+            await fetchInventoryData();
         }
     };
 
     const handleToggleCharacter = () => {
-        setIsCharacterOpen(!isCharacterOpen);
+        dispatchSidebar({ type: 'TOGGLE_CHARACTER' });
     };
 
+    const inventoryContainerRef = useRef(null);
+
     const handleDragStart = (index, e) => {
-        e.stopPropagation(); // Prevent other click events from triggering
+        e.stopPropagation();
+        if (e.button !== 0) return;
 
-        //newIndexRef.current = null;
+        const itemToDrag = inventoryItems[index];
 
-        // keeps item from deleting
-        //setUpdatedInventoryItems(userInfo.inventory.slots || []);
+        if (itemToDrag.name === 'Empty Slot') {
+            console.error('Invalid item to drag:', itemToDrag);
+            return;
+        }
 
-        setDraggedItem(inventoryItems[index]);
+        setDraggedItem(itemToDrag);
         setInitialDragIndex(index);
 
-        const inventoryContainer = document.querySelector(
-            '.inventory-container'
-        );
-        const inventoryRect = inventoryContainer.getBoundingClientRect();
+        const inventoryRect =
+            inventoryContainerRef.current.getBoundingClientRect();
 
-        // Calculate the offset relative to the inventory container's top-left corner
         const offsetX = e.clientX - inventoryRect.left;
         const offsetY = e.clientY - inventoryRect.top;
 
         setOffsetX(offsetX);
         setOffsetY(offsetY);
         draggedItemRef.current = index;
-
-        e.target.style.cursor = 'grabbing';
     };
 
     const handleDrag = (e) => {
         if (!draggedItem) return;
         e.preventDefault();
 
-        const inventoryContainer = document.querySelector(
-            '.inventory-container'
-        );
-        const inventoryRect = inventoryContainer.getBoundingClientRect();
+        const inventoryRect =
+            inventoryContainerRef.current.getBoundingClientRect();
 
         setDraggedItem((prevItem) => ({
             ...prevItem,
-            positionX: e.clientX - offsetX - inventoryRect.left,
-            positionY: e.clientY - offsetY - inventoryRect.top,
+            positionX: Math.round(e.clientX - offsetX - inventoryRect.left),
+            positionY: Math.round(e.clientY - offsetY - inventoryRect.top),
         }));
+
+        e.target.style.cursor = 'grabbing';
     };
 
     const handleDragEnd = async (e) => {
@@ -127,7 +145,11 @@ const LeftSidebar = () => {
         newIndex = Math.max(0, newIndex);
         newIndex = Math.min(inventorySlots - 1, newIndex);
 
-        if (isNaN(clampedRow) || isNaN(clampedColumn)) {
+        if (
+            isNaN(clampedRow) ||
+            isNaN(clampedColumn) ||
+            draggedItemRef.current === newIndex
+        ) {
             return;
         }
 
@@ -138,18 +160,21 @@ const LeftSidebar = () => {
             updatedItems[draggedItemRef.current] = updatedItems[newIndex];
             updatedItems[newIndex] = tempItem;
 
-            // Immediately update the state with the correct positions
-            setUpdatedInventoryItems(updatedItems);
+            dispatchInventory({
+                type: 'SET_UPDATED_INVENTORY_ITEMS',
+                payload: updatedItems,
+            });
 
-            // Update the database only after the state has been updated
             const res = await onDrop({
                 changedIndices: [draggedItemRef.current, newIndex],
                 updatedItems,
             }).unwrap();
 
-            // Ensure the response is valid
             if (res.updatedInventory && res.updatedInventory.slots) {
-                dispatch(updateInventoryOnChange(res.updatedInventory.slots));
+                dispatchInventory({
+                    type: 'SET_INVENTORY_ITEMS',
+                    payload: res.updatedInventory.slots,
+                });
                 console.log('API Response:', res);
             } else {
                 console.error('Invalid response format from server:', res);
@@ -167,13 +192,12 @@ const LeftSidebar = () => {
     const handleTouchStart = (index, e) => {
         if (e) {
             e.stopPropagation();
+
             setDraggedItem(inventoryItems[index]);
             setInitialDragIndex(index);
 
-            const inventoryContainer = document.querySelector(
-                '.inventory-container'
-            );
-            const inventoryRect = inventoryContainer.getBoundingClientRect();
+            const inventoryRect =
+                inventoryContainerRef.current.getBoundingClientRect();
 
             const offsetX = e.touches[0].clientX - inventoryRect.left;
             const offsetY = e.touches[0].clientY - inventoryRect.top;
@@ -182,11 +206,13 @@ const LeftSidebar = () => {
             setOffsetY(offsetY);
             draggedItemRef.current = index;
 
-            e.target.style.cursor = 'grabbing';
-
-            inventoryContainer.addEventListener('touchmove', preventScroll, {
-                passive: false,
-            });
+            inventoryContainerRef.current.addEventListener(
+                'touchmove',
+                preventScroll,
+                {
+                    passive: false,
+                }
+            );
         }
     };
 
@@ -198,119 +224,157 @@ const LeftSidebar = () => {
         if (!draggedItem) return;
         //e.preventDefault();
 
-        const inventoryContainer = document.querySelector(
-            '.inventory-container'
-        );
-        const inventoryRect = inventoryContainer.getBoundingClientRect();
+        const inventoryRect =
+            inventoryContainerRef.current.getBoundingClientRect();
 
         setDraggedItem((prevItem) => ({
             ...prevItem,
-            positionX: e.touches[0].clientX - offsetX - inventoryRect.left,
-            positionY: e.touches[0].clientY - offsetY - inventoryRect.top,
+            positionX: Math.round(e.clientX - offsetX - inventoryRect.left),
+            positionY: Math.round(e.clientY - offsetY - inventoryRect.top),
         }));
     };
 
+    const handleMouseUp = () => {
+        setDraggedItem(null);
+        setInitialDragIndex(null);
+    };
+
     useEffect(() => {
-        setInventoryHeight(isInventoryOpen ? 424 : 0);
-        //setUpdatedInventoryItems(
-        //Array.from({ length: inventorySlots }).fill(null)
-        //);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
 
-        //const userInventory = userInfo.inventory.slots || [];
-
+    useEffect(() => {
         if (
             inventoryData &&
             inventoryData.updatedInventory &&
             inventoryData.updatedInventory.slots
         ) {
-            // Update local state with the current inventory items
-            setInventoryItems(inventoryData.updatedInventory.slots);
-            setUpdatedInventoryItems(inventoryData.updatedInventory.slots);
+            dispatchInventory({
+                type: 'SET_INVENTORY_ITEMS',
+                payload: inventoryData.updatedInventory.slots,
+            });
         } else if (error) {
-            console.error('Error fetching inventory', error);
+            console.error('Error fetching inventory:', error);
         }
-    }, [isInventoryOpen, inventoryData, error]);
+    }, [sidebarState.isInventoryOpen, inventoryData, error]);
 
     useEffect(() => {
-        setCharacterHeight(isCharacterOpen ? 400 : 0);
-    }, [isCharacterOpen]);
+        if (!contextMenu.show) {
+            setContextMenuItemName('');
+            setCheckStackable(false);
+        }
+    }, [contextMenu.show]);
+
+    useEffect(() => {
+        if (contextMenu.index !== undefined) {
+            const itemName = inventoryItems[contextMenu.index]?.name;
+            const isStackable = inventoryItems[contextMenu.index]?.stackable;
+            if (itemName !== contextMenuItemName) {
+                setContextMenuItemName(itemName);
+            }
+            if (isStackable) {
+                setCheckStackable(isStackable);
+            } else {
+                setCheckStackable(false);
+            }
+        }
+    }, [contextMenu, inventoryItems, contextMenuItemName]);
+
+    const inventoryHeight = sidebarState.isInventoryOpen ? 424 : 0;
+    const characterHeight = sidebarState.isCharacterOpen ? 400 : 0;
+
+    const handleDragStartDebounced = debounce(handleDragStart, 0);
+    const handleDragEndDebounced = debounce(handleDragEnd, 0);
 
     return (
         <div className="left-sidebar">
+            <ContextMenu
+                contextMenu={contextMenu}
+                itemName={contextMenuItemName}
+                splitStackableItem={checkStackable}
+            />
             <div className="left-sidebar-content-container">
                 <p onClick={handleToggleInventory}>
                     Inventory{' '}
-                    {isInventoryOpen ? (
+                    {sidebarState.isInventoryOpen ? (
                         <ChevronUpIcon className="chevron-down-sidebar" />
                     ) : (
                         <ChevronDownIcon className="chevron-up-sidebar" />
                     )}{' '}
                 </p>
-                {isInventoryOpen && (
+                {sidebarState.isInventoryOpen && (
                     <div
-                        className="inventory-container"
+                        className={`inventory-container ${
+                            sidebarState.isInventoryOpen ? 'open' : ''
+                        }`}
                         style={{
                             height: inventoryHeight,
                         }}
                         onMouseMove={handleDrag}
-                        onMouseUp={handleDragEnd}
+                        onMouseUp={handleDragEndDebounced}
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
-                        onTouchEnd={handleDragEnd}
+                        onTouchEnd={handleDragEndDebounced}
+                        ref={inventoryContainerRef}
                     >
-                        {/* Generate slots */}
                         {updatedInventoryItems.map((inventoryItem, index) => (
-                            <div
-                                key={index}
-                                style={{
-                                    border: '1px solid var(--theme-grey-o-400)',
-                                    width: '48px',
-                                    height: '48px',
-                                }}
-                            >
-                                {inventoryItem?.name !== 'Empty Slot' && (
-                                    <>
-                                        <img
-                                            src={inventoryItem?.image}
-                                            alt={inventoryItem?.name}
-                                            style={{
-                                                cursor: 'grab',
-                                                zIndex:
-                                                    draggedItem &&
-                                                    draggedItemRef.current ===
-                                                        index
-                                                        ? 1
-                                                        : 'auto',
-                                                transform:
-                                                    draggedItem &&
-                                                    draggedItemRef.current ===
-                                                        index
-                                                        ? `translate(${draggedItem.positionX}px, ${draggedItem.positionY}px)`
-                                                        : 'none',
-                                            }}
-                                            onMouseDown={(e) =>
-                                                handleDragStart(index, e)
-                                            }
-                                            onTouchStart={(e) =>
-                                                handleTouchStart(index, e)
-                                            }
-                                        />
-                                        {inventoryItem?.quantity}
-                                    </>
-                                )}
-                            </div>
+                            <React.Fragment key={index}>
+                                <div className={`inventory-slot`}>
+                                    {inventoryItem?.name !== 'Empty Slot' && (
+                                        <>
+                                            <img
+                                                src={inventoryItem?.image}
+                                                alt={inventoryItem?.name}
+                                                style={{
+                                                    zIndex:
+                                                        draggedItem &&
+                                                        draggedItemRef.current ===
+                                                            index
+                                                            ? 1
+                                                            : 'auto',
+                                                    transform:
+                                                        draggedItem &&
+                                                        draggedItemRef.current ===
+                                                            index
+                                                            ? `translate(${draggedItem.positionX}px, ${draggedItem.positionY}px)`
+                                                            : 'none',
+                                                }}
+                                                draggable
+                                                onMouseDown={(e) =>
+                                                    handleDragStartDebounced(
+                                                        index,
+                                                        e
+                                                    )
+                                                }
+                                                onTouchStart={(e) =>
+                                                    handleTouchStart(index, e)
+                                                }
+                                                onContextMenu={(e) =>
+                                                    showContextMenu(index, e)
+                                                }
+                                            />
+                                            {inventoryItem?.stackable && (
+                                                <>{inventoryItem?.quantity}</>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </React.Fragment>
                         ))}
                     </div>
                 )}
                 <p onClick={handleToggleCharacter}>
                     Character{' '}
-                    {isCharacterOpen ? (
+                    {sidebarState.isCharacterOpen ? (
                         <ChevronUpIcon className="chevron-down-sidebar" />
                     ) : (
                         <ChevronDownIcon className="chevron-up-sidebar" />
                     )}{' '}
                 </p>
-                {isCharacterOpen && (
+                {sidebarState.isCharacterOpen && (
                     <div
                         className="character-container"
                         style={{
@@ -323,4 +387,5 @@ const LeftSidebar = () => {
         </div>
     );
 };
+
 export default LeftSidebar;

@@ -9,7 +9,7 @@
         "client": "npm run dev --prefix frontend",
         "dev": "concurrently \"npm run server\" \"npm run client\""
     },
-    "author": "Ian",
+    "author": "Roonie & Bunk",
     "license": "ISC",
     "dependencies": {
         "bcryptjs": "^2.4.3",
