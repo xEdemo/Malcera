@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const demonicContractController = require('../controllers/demonicContractController');
 
-// Create a new Demonic Contract
-router.post('/', demonicContractController.createDemonicContract);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all Demonic Contracts
-router.get('/', demonicContractController.getAllDemonicContracts);
+const {
+    createDemonicContract,
+    getAllDemonicContracts,
+    updateDemonicContract,
+    deleteDemonicContract,
+} = require('../controllers/demonicContractController.js');
 
-// Get a Demonic Contract by ID
-router.get('/:id', demonicContractController.getDemonicContractById);
-
-// Update a Demonic Contract by ID
-router.put('/:id', demonicContractController.updateDemonicContract);
-
-// Delete a Demonic Contract by ID
-router.delete('/:id', demonicContractController.deleteDemonicContract);
+// Create a new DemonicContract
+router
+    .route('/')
+    .post([protect, superAdmin], createDemonicContract)
+    .get([protect, admin], getAllDemonicContracts);
+router
+    .route('/:demonicContractId')
+    .put([protect, superAdmin], updateDemonicContract)
+    .delete([protect, superAdmin], deleteDemonicContract);
 
 module.exports = router;
