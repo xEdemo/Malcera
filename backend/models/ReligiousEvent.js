@@ -19,12 +19,12 @@ const ReligiousEventSchema = new mongoose.Schema({
       'Spiritual Retreat',
       'Religious Conference',
       'Holy War', 
-    ],
+    ],              // add second type ex crusade
     required: true,
   },
   date: {
-    type: Date,
-    required: true,
+    type: String,
+    required: false,
   },
   location: {
     type: String,
@@ -32,12 +32,12 @@ const ReligiousEventSchema = new mongoose.Schema({
   },
   participants: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Number,
       ref: 'User', // Reference to players or characters involved
     },
   ],
   religiousOrder: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Number,
     ref: 'ReligiousOrder', // Reference to the associated religious order
   },
 });
