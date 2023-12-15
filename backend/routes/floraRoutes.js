@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const floraController = require('../controllers/floraController'); // Import your flora controller
+
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
 const {
     createFlora,
+    getAllFloras,
     updateFlora,
     deleteFlora,
-  } = require('../controllers/floraController');
-  
-  // Create a new flora
-  router.post('/', createFlora);
-  
-  // Update existing flora
-  router.put('/:floraId', updateFlora);
-  
-  // Delete flora
-  router.delete('/:floraId', deleteFlora);
-  
-  module.exports = router;
+} = require('../controllers/floraController.js');
+
+// Create a new flora
+router
+    .route('/')
+    .post([protect, superAdmin], createFlora)
+    .get([protect, admin], getAllFloras);
+router
+    .route('/:floraId')
+    .put([protect, superAdmin], updateFlora)
+    .delete([protect, superAdmin], deleteFlora);
+
+module.exports = router;

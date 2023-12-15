@@ -1,63 +1,122 @@
-const Flora = require('../models/Flora');
+const { StatusCodes } = require('http-status-codes');
+const { Flora } = require('../models');
 
-const floraController = {
-  getAllFlora: async (req, res) => {
-    try {
-      const flora = await Flora.find();
-      return res.json(flora);
-    } catch (error) {
-      return res.status(500).json({ error: 'An error occurred while fetching flora.' });
-    }
-  },
+// @desc    Create Flora
+// @route   POST /api/v1/flora
+// @access  Private (Super Admin)
+const createFlora = async (req, res) => {
+  const { name, type, description, rarity, properties } = req.body;
 
-  getFloraById: async (req, res) => {
-    try {
-      const flora = await Flora.findById(req.params.id);
-      if (!flora) {
-        return res.status(404).json({ error: 'Flora not found.' });
-      }
-      return res.json(flora);
-    } catch (error) {
-      return res.status(500).json({ error: 'An error occurred while fetching flora.' });
-    }
-  },
+  if (!name || !type || !description || !rarity || !properties ) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Please fill out all required fields.');
+  }
 
-  createFlora: async (req, res) => {
-    try {
-      const newFlora = await Flora.create(req.body);
-      return res.status(201).json(newFlora);
-    } catch (error) {
-      return res.status(500).json({ error: 'Unable to create flora.' });
-    }
-  },
+  const flora = new Flora({
+    name,
+    type,
+    description,
+    rarity,
+    properties,
+  });
 
-  updateFlora: async (req, res) => {
-    const floraId = req.params.id;
-    try {
-      const updatedFlora = await Flora.findByIdAndUpdate(floraId, req.body, { new: true });
-      if (!updatedFlora) {
-        return res.status(404).json({ error: 'Flora not found.' });
-      }
-      return res.json(updatedFlora);
-    } catch (error) {
-      return res.status(500).json({ error: 'Unable to update flora.' });
-    }
-  },
-
-  deleteFlora: async (req, res) => {
-    const floraId = req.params.id;
-    try {
-      const deletedFlora = await Flora.findByIdAndRemove(floraId);
-      if (!deletedFlora) {
-        return res.status(404).json({ error: 'Flora not found.' });
-      }
-      return res.json({ message: 'Flora deleted successfully.' });
-    } catch (error) {
-      return res.status(500).json({ error: 'Unable to delete flora.' });
-    }
-  },
-
-  // Add more controller methods for managing flora
+  await flora.save();
+  res.status(StatusCodes.CREATED).json({ flora });
 };
 
-module.exports = floraController;
+// why no description steve? underneath
+// @desc    Get all Floras
+// @route   GET /api/v1/flora
+// @access  Private (Admin)
+const getAllFloras = async (req, res) => {
+  const { name, type, description, rarity, properties, sort, fields } = req.query;
+  const queryObject = {};
+  if (name) {
+    // $options: 'i' is non-case sensitive
+    queryObject.name = { $regex: name, $options: 'i' };
+  }
+  if (type) {
+    queryObject.type = type;
+  }
+  if (description) {
+    queryObject.description = { $regex: description, $options: 'i' };
+  }
+  if (rarity) {
+    queryObject.rarity = { $regex: rarity, $options: 'i' };
+  }
+  if (properties) {
+    queryObject.properties = { $regex: properties, $options: 'i' };
+  }
+
+  let result = Flora.find(queryObject);
+  // Sort
+  if (sort) {
+    const sortList = sort.split(',').join(' ');
+    result = result.sort(sortList);
+  } else {
+    result = result.sort('createdAt');
+  }
+  // Fields
+  if (fields) {
+    const fieldsList = fields.split(',').join(' ');
+    result = result.select(fieldsList);
+  }
+  // Sets defaults if not specified
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  result = result.skip(skip).limit(limit);
+  const floras = await result;
+  res.status(StatusCodes.OK).json({ count: floras.length, floras });
+};
+
+// @desc    Update Mount
+// @route   PUT /api/v1/mount/:mountId
+// @access  Private (Super Admin)
+const updateFlora = async (req, res) => {
+  const { floraId } = req.params;
+  const { name, type, description, rarity, properties } = req.body;
+
+  // For required fields
+  if (name === '' || type === '' || description === '' || rarity === '' || properties === '') {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Required fields need a number, string, object, or boolean.');
+  }
+  // End for required fields
+  const filter = { _id: floraId }
+  const flora = await Flora.findOneAndUpdate(
+      filter,
+      { name, type, description, rarity, properties },
+      { new: true }
+  );
+
+  if (!flora) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error(`No flora found with an ID of ${floraId}.`);
+  }
+
+  res.status(StatusCodes.OK).json({ flora });
+};
+
+// @desc    Delete Flora
+// @route   DELETE /api/v1/flora/:floraId
+// @access  Private (Super Admin)
+const deleteFlora = async (req, res) => {
+  const { floraId } = req.params;
+  const flora = await Flora.findByIdAndDelete(floraId);
+
+  if (!flora) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error(`No Flora found with an ID of ${floraId}.`);
+  }
+
+  res.status(StatusCodes.OK).json({ message: 'Flora deleted successfully.' });
+};
+
+module.exports = {
+  createFlora,
+  getAllFloras,
+  updateFlora,
+  deleteFlora,
+};

@@ -9,6 +9,7 @@ const Mount = require('./Mount.js')
 const ReligiousEvent = require('./ReligiousEvent.js')
 const Bank = require('./Bank.js')
 const Fauna = require('./Fauna.js')
+const Flora = require('./Flora.js')
 
 module.exports = {
     User,
@@ -21,5 +22,6 @@ module.exports = {
     Mount,
     ReligiousEvent,
     Bank,
-    Fauna
+    Fauna,
+    Flora
 };
