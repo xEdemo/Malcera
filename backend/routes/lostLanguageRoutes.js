@@ -1,17 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const lostLanguageController = require('../controllers/lostLanguageController.js');
 
-// Create a new Lost Language
-router.post('/', lostLanguageController.createLostLanguage);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all Lost Languages
-router.get('/', lostLanguageController.getAllLostLanguages);
+const {
+    createLostLanguage,
+    getAllLostLanguages,
+    updateLostLanguage,
+    deleteLostLanguage,
+} = require('../controllers/lostLanguageController.js');
 
-// Update a Lost Language by ID
-router.put('/:languageId', lostLanguageController.updateLostLanguage);
-
-// Delete a Lost Language by ID
-router.delete('/:languageId', lostLanguageController.deleteLostLanguage);
+// Create a new mount
+router
+    .route('/')
+    .post([protect, superAdmin], createLostLanguage)
+    .get([protect, admin], getAllLostLanguages);
+router
+    .route('/:lostLanguageId')
+    .put([protect, superAdmin], updateLostLanguage)
+    .delete([protect, superAdmin], deleteLostLanguage);
 
 module.exports = router;
