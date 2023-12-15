@@ -32,7 +32,6 @@ const LostLanguageRouter = require('./routes/lostlanguageRoutes.js');
 //const sentientItemRouter = require('./routes/sentientItemRoutes.js');
 const forbiddenlibraryRouter = require('./routes/forbiddenLibraryRoutes.js');
 const bankRouter = require('./routes/bankRoutes.js');
-//const templeRouter = require('./routes/templeRoutes.js');
 const religiouseventRouter = require('./routes/religiousEventRoutes.js');
 const demoniccontractRouter = require('./routes/demonicContractRoutes.js');
 const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
@@ -41,6 +40,7 @@ const inventoryRouter = require('./routes/inventoryRoutes.js');
 const religiousorderRouter = require('./routes/religiousOrderRoutes')
 const seasonRouter = require('./routes/seasonRoutes.js')
 const weatherRouter = require('./routes/weatherRoutes.js')
+const templeRouter = require('./routes/templeRoutes.js');
 
 app.use(helmet());
 app.use(cors());
@@ -68,7 +68,6 @@ app.use('/api/v1/lost-language', LostLanguageRouter);
 //app.use('/api/sentient-items', sentientItemRouter);
 app.use('/api/v1/forbidden-library', forbiddenlibraryRouter);
 app.use('/api/v1/bank', bankRouter);
-//app.use('/api/v1/temple', temple-router);
 app.use('/api/v1/religious-event', religiouseventRouter);
 app.use('/api/v1/demonic-contract', demoniccontractRouter);
 app.use('/api/v1/natural-disaster', naturaldisasterRouter);
@@ -77,6 +76,7 @@ app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/religious-order', religiousorderRouter)
 app.use('/api/v1/season', seasonRouter)
 app.use('/api/v1/weather', weatherRouter)
+app.use('/api/v1/temple', templeRouter);
 
 // Error handlers
 app.use(notFound);
