@@ -16,6 +16,7 @@ const LostLanguage = require('./LostLanguage.js')
 const LostTreasure = require('./LostTreasure.js')
 const NaturalDisaster = require('./NaturalDisaster.js')
 const ReligiousOrder = require('./ReligiousOrder.js')
+const BlackMarket = require('./BlackMarket.js')
 
 module.exports = {
     User,
@@ -35,5 +36,6 @@ module.exports = {
     LostLanguage,
     LostTreasure,
     NaturalDisaster,
-    ReligiousOrder
+    ReligiousOrder,
+    BlackMarket
 };

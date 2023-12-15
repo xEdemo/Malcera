@@ -30,7 +30,7 @@ const BlackMarketSchema = new mongoose.Schema({
     required: true,
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,            //mongoose.Schema.Types.ObjectId,
     ref: 'Character', // Reference to an NPC or character that owns the market
   },
   alignment: {
