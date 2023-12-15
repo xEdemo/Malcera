@@ -15,6 +15,7 @@ const ForbiddenLibrary = require('./ForbiddenLibrary.js')
 const LostLanguage = require('./LostLanguage.js')
 const LostTreasure = require('./LostTreasure.js')
 const NaturalDisaster = require('./NaturalDisaster.js')
+const ReligiousOrder = require('./ReligiousOrder.js')
 
 module.exports = {
     User,
@@ -33,5 +34,6 @@ module.exports = {
     ForbiddenLibrary,
     LostLanguage,
     LostTreasure,
-    NaturalDisaster
+    NaturalDisaster,
+    ReligiousOrder
 };

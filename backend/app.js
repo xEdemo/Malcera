@@ -32,13 +32,13 @@ const LostLanguageRouter = require('./routes/lostlanguageRoutes.js');
 //const sentientItemRouter = require('./routes/sentientItemRoutes.js');
 const forbiddenlibraryRouter = require('./routes/forbiddenLibraryRoutes.js');
 const bankRouter = require('./routes/bankRoutes.js');
-//const religiousorderRouter = require('./routes/religiousOrderRoutes.js');
 //const templeRouter = require('./routes/templeRoutes.js');
 const religiouseventRouter = require('./routes/religiousEventRoutes.js');
 const demoniccontractRouter = require('./routes/demonicContractRoutes.js');
 const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
 //const blackmarketRouter = require('./routes/blackMarketRoutes.js');
 const inventoryRouter = require('./routes/inventoryRoutes.js');
+const religiousorderRouter = require('./routes/religiousOrderRoutes')
 
 app.use(helmet());
 app.use(cors());
@@ -73,6 +73,7 @@ app.use('/api/v1/demonic-contract', demoniccontractRouter);
 app.use('/api/v1/natural-disaster', naturaldisasterRouter);
 //app.use('/api/v1/black-markets', blackmarketRouter);
 app.use('/api/v1/inventory', inventoryRouter);
+app.use('/api/v1/religious-order', religiousorderRouter)
 
 // Error handlers
 app.use(notFound);
