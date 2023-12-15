@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const naturalDisasterController = require('../controllers/naturalDisasterController.js');
 
-// Create a new natural disaster
-router.post('/', naturalDisasterController.createNaturalDisaster);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all natural disasters
-router.get('/', naturalDisasterController.getAllNaturalDisasters);
+const {
+    createNaturalDisaster,
+    getAllNaturalDisasters,
+    updateNaturalDisaster,
+    deleteNaturalDisaster,
+} = require('../controllers/naturalDisasterController.js');
 
-// Get a specific natural disaster by ID
-router.get('/:disasterId', naturalDisasterController.getNaturalDisasterById);
-
-// Update a natural disaster by ID
-router.put('/:disasterId', naturalDisasterController.updateNaturalDisaster);
-
-// Delete a natural disaster by ID
-router.delete('/:disasterId', naturalDisasterController.deleteNaturalDisaster);
+// Create a new naturalDisaster
+router
+    .route('/')
+    .post([protect, superAdmin], createNaturalDisaster)
+    .get([protect, admin], getAllNaturalDisasters);
+router
+    .route('/:mountId')
+    .put([protect, superAdmin], updateNaturalDisaster)
+    .delete([protect, superAdmin], deleteNaturalDisaster);
 
 module.exports = router;

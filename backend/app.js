@@ -36,7 +36,7 @@ const bankRouter = require('./routes/bankRoutes.js');
 //const templeRouter = require('./routes/templeRoutes.js');
 const religiouseventRouter = require('./routes/religiousEventRoutes.js');
 const demoniccontractRouter = require('./routes/demonicContractRoutes.js');
-//const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
+const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
 //const blackmarketRouter = require('./routes/blackMarketRoutes.js');
 const inventoryRouter = require('./routes/inventoryRoutes.js');
 
@@ -70,7 +70,7 @@ app.use('/api/v1/bank', bankRouter);
 //app.use('/api/v1/temple', temple-router);
 app.use('/api/v1/religious-event', religiouseventRouter);
 app.use('/api/v1/demonic-contract', demoniccontractRouter);
-//app.use('/api/v1/natural-disasters', naturaldisasterRouter);
+app.use('/api/v1/natural-disaster', naturaldisasterRouter);
 //app.use('/api/v1/black-markets', blackmarketRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 

@@ -14,6 +14,7 @@ const DemonicContract = require('./DemonicContract.js')
 const ForbiddenLibrary = require('./ForbiddenLibrary.js')
 const LostLanguage = require('./LostLanguage.js')
 const LostTreasure = require('./LostTreasure.js')
+const NaturalDisaster = require('./NaturalDisaster.js')
 
 module.exports = {
     User,
@@ -31,5 +32,6 @@ module.exports = {
     DemonicContract,
     ForbiddenLibrary,
     LostLanguage,
-    LostTreasure
+    LostTreasure,
+    NaturalDisaster
 };
