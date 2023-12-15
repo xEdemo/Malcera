@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const faunaController = require('../controllers/faunaController'); // Import your fauna controller
+
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
 const {
     createFauna,
+    getAllFaunas,
     updateFauna,
     deleteFauna,
-  } = require('../controllers/faunaController');
-  
-  // Create a new fauna
-  router.post('/', createFauna);
-  
-  // Update existing fauna
-  router.put('/:faunaId', updateFauna);
-  
-  // Delete fauna
-  router.delete('/:faunaId', deleteFauna);
-  
-  module.exports = router;
+} = require('../controllers/faunaController.js');
+
+// Create a new fauna
+router
+    .route('/')
+    .post([protect, superAdmin], createFauna)
+    .get([protect, admin], getAllFaunas);
+router
+    .route('/:faunaId')
+    .put([protect, superAdmin], updateFauna)
+    .delete([protect, superAdmin], deleteFauna);
+
+module.exports = router;
