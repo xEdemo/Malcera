@@ -40,6 +40,7 @@ const blackmarketRouter = require('./routes/blackMarketRoutes.js');
 const inventoryRouter = require('./routes/inventoryRoutes.js');
 const religiousorderRouter = require('./routes/religiousOrderRoutes')
 const seasonRouter = require('./routes/seasonRoutes.js')
+const weatherRouter = require('./routes/weatherRoutes.js')
 
 app.use(helmet());
 app.use(cors());
@@ -67,7 +68,6 @@ app.use('/api/v1/lost-language', LostLanguageRouter);
 //app.use('/api/sentient-items', sentientItemRouter);
 app.use('/api/v1/forbidden-library', forbiddenlibraryRouter);
 app.use('/api/v1/bank', bankRouter);
-//app.use('/api/v1/religious-order', religiousorderRouter);
 //app.use('/api/v1/temple', temple-router);
 app.use('/api/v1/religious-event', religiouseventRouter);
 app.use('/api/v1/demonic-contract', demoniccontractRouter);
@@ -76,6 +76,7 @@ app.use('/api/v1/black-market', blackmarketRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/religious-order', religiousorderRouter)
 app.use('/api/v1/season', seasonRouter)
+app.use('/api/v1/weather', weatherRouter)
 
 // Error handlers
 app.use(notFound);
