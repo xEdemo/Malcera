@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const forbiddenLibraryController = require('../controllers/forbiddenLibraryController');
 
-// Create a new Forbidden Library
-router.post('/', forbiddenLibraryController.createForbiddenLibrary);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all Forbidden Libraries
-router.get('/', forbiddenLibraryController.getAllForbiddenLibraries);
+const {
+    createForbiddenLibrary,
+    getAllForbiddenLibraries,
+    updateForbiddenLibrary,
+    deleteForbiddenLibrary,
+} = require('../controllers/forbiddenLibraryController.js');
 
-// Get a specific Forbidden Library by ID
-router.get('/:id', forbiddenLibraryController.getForbiddenLibraryById);
-
-// Update a Forbidden Library by ID
-router.put('/:id', forbiddenLibraryController.updateForbiddenLibrary);
-
-// Delete a Forbidden Library by ID
-router.delete('/:id', forbiddenLibraryController.deleteForbiddenLibrary);
+// Create a new forbiddenLibrary
+router
+    .route('/')
+    .post([protect, superAdmin], createForbiddenLibrary)
+    .get([protect, admin], getAllForbiddenLibraries);
+router
+    .route('/:forbiddenLibraryId')
+    .put([protect, superAdmin], updateForbiddenLibrary)
+    .delete([protect, superAdmin], deleteForbiddenLibrary);
 
 module.exports = router;

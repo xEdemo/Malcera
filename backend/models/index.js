@@ -11,6 +11,7 @@ const Bank = require('./Bank.js')
 const Fauna = require('./Fauna.js')
 const Flora = require('./Flora.js')
 const DemonicContract = require('./DemonicContract.js')
+const ForbiddenLibrary = require('./ForbiddenLibrary.js')
 
 module.exports = {
     User,
@@ -25,5 +26,6 @@ module.exports = {
     Bank,
     Fauna,
     Flora,
-    DemonicContract
+    DemonicContract,
+    ForbiddenLibrary
 };
