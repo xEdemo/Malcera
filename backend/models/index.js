@@ -13,6 +13,7 @@ const Flora = require('./Flora.js')
 const DemonicContract = require('./DemonicContract.js')
 const ForbiddenLibrary = require('./ForbiddenLibrary.js')
 const LostLanguage = require('./LostLanguage.js')
+const LostTreasure = require('./LostTreasure.js')
 
 module.exports = {
     User,
@@ -29,5 +30,6 @@ module.exports = {
     Flora,
     DemonicContract,
     ForbiddenLibrary,
-    LostLanguage
+    LostLanguage,
+    LostTreasure
 };

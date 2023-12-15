@@ -1,17 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const lostTreasureController = require('../controllers/lostTreasureController.js');
 
-// Create a new Lost Treasure
-router.post('/', lostTreasureController.createLostTreasure);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all Lost Treasures
-router.get('/', lostTreasureController.getAllLostTreasures);
+const {
+    createLostTreasure,
+    getAllLostTreasures,
+    updateLostTreasure,
+    deleteLostTreasure,
+} = require('../controllers/lostTreasureController.js');
 
-// Update a Lost Treasure by ID
-router.put('/:id', lostTreasureController.updateLostTreasure);
-
-// Delete a Lost Treasure by ID
-router.delete('/:id', lostTreasureController.deleteLostTreasure);
+// Create a new mount
+router
+    .route('/')
+    .post([protect, superAdmin], createLostTreasure)
+    .get([protect, admin], getAllLostTreasures);
+router
+    .route('/:lostTreasureId')
+    .put([protect, superAdmin], updateLostTreasure)
+    .delete([protect, superAdmin], deleteLostTreasure);
 
 module.exports = router;
