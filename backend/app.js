@@ -39,6 +39,7 @@ const naturaldisasterRouter = require('./routes/naturalDisasterRoutes.js');
 const blackmarketRouter = require('./routes/blackMarketRoutes.js');
 const inventoryRouter = require('./routes/inventoryRoutes.js');
 const religiousorderRouter = require('./routes/religiousOrderRoutes')
+const seasonRouter = require('./routes/seasonRoutes.js')
 
 app.use(helmet());
 app.use(cors());
@@ -74,6 +75,7 @@ app.use('/api/v1/natural-disaster', naturaldisasterRouter);
 app.use('/api/v1/black-market', blackmarketRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/religious-order', religiousorderRouter)
+app.use('/api/v1/season', seasonRouter)
 
 // Error handlers
 app.use(notFound);

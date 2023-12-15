@@ -17,6 +17,7 @@ const LostTreasure = require('./LostTreasure.js')
 const NaturalDisaster = require('./NaturalDisaster.js')
 const ReligiousOrder = require('./ReligiousOrder.js')
 const BlackMarket = require('./BlackMarket.js')
+const Season = require('./Season.js')
 
 module.exports = {
     User,
@@ -37,5 +38,6 @@ module.exports = {
     LostTreasure,
     NaturalDisaster,
     ReligiousOrder,
-    BlackMarket
+    BlackMarket,
+    Season
 };

@@ -1,59 +1,121 @@
-const Season = require('../models/Season');
+const { StatusCodes } = require('http-status-codes');
+const { Season } = require('../models');
 
-const getSeasons = async (req, res) => {
-  try {
-    const seasons = await Season.find();
-    return res.json(seasons);
-  } catch (error) {
-    return res.status(500).json({ error: 'An error occurred while fetching seasons.' });
-  }
-};
-
-const getCurrentSeason = async (req, res) => {
-  try {
-    const currentMonth = new Date().getMonth() + 1; // Adding 1 to get the month in the range of 1-12
-
-    const season = await Season.findOne({ startMonth: { $lte: currentMonth }, endMonth: { $gte: currentMonth } });
-    if (!season) {
-      return res.status(404).json({ error: 'No season found for the current month.' });
-    }
-    return res.json(season);
-  } catch (error) {
-    return res.status(500).json({ error: 'An error occurred while determining the current season.' });
-  }
-};
-
+// @desc    Create Season
+// @route   POST /api/v1/season
+// @access  Private (Super Admin)
 const createSeason = async (req, res) => {
-  try {
-    const season = await Season.create(req.body);
-    return res.status(201).json(season);
-  } catch (error) {
-    return res.status(500).json({ error: 'An error occurred while creating the season.' });
+  const { name, description, startMonth, endMonth, effects } = req.body;
+
+  if (!name || !description || !startMonth || !endMonth || !effects ) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Please fill out all required fields.');
   }
+
+  const season = new Season({
+    name,
+    description,
+    startMonth,
+    endMonth,
+    effects,
+  });
+
+  await season.save();
+  res.status(StatusCodes.CREATED).json({ season });
 };
 
+// @desc    Get all Seasons
+// @route   GET /api/v1/season
+// @access  Private (Admin)
+const getAllSeasons = async (req, res) => {
+  const { name, description, startMonth, endMonth, effects, sort, fields } = req.query;
+  const queryObject = {};
+  if (name) {
+    // $options: 'i' is non-case sensitive
+    queryObject.name = { $regex: name, $options: 'i' };
+  }
+  if (description) {
+    queryObject.description = description;
+  }
+  if (startMonth) {
+    queryObject.startMonth = { $regex: startMonth, $options: 'i' };
+  }
+  if (endMonth) {
+    queryObject.endMonth = { $regex: endMonth, $options: 'i'};
+  }
+  if (effects) {
+    queryObject.effects = { $regex: effects, $options: 'i'};
+  }
+
+  let result = Season.find(queryObject);
+  // Sort
+  if (sort) {
+    const sortList = sort.split(',').join(' ');
+    result = result.sort(sortList);
+  } else {
+    result = result.sort('createdAt');
+  }
+  // Fields
+  if (fields) {
+    const fieldsList = fields.split(',').join(' ');
+    result = result.select(fieldsList);
+  }
+  // Sets defaults if not specified
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  result = result.skip(skip).limit(limit);
+  const seasons = await result;
+  res.status(StatusCodes.OK).json({ count: seasons.length, seasons });
+};
+
+// @desc    Update Season
+// @route   PUT /api/v1/season/:seasonId
+// @access  Private (Super Admin)
 const updateSeason = async (req, res) => {
-  try {
-    const season = await Season.findByIdAndUpdate(req.params.seasonId, req.body, { new: true });
-    if (!season) {
-      return res.status(404).json({ error: 'Season not found.' });
-    }
-    return res.json(season);
-  } catch (error) {
-    return res.status(500).json({ error: 'An error occurred while updating the season.' });
+  const { seasonId } = req.params;
+  const { name, description, startMonth, endMonth, effects } = req.body;
+
+  // For required fields
+  if (name === '' || description === '' || startMonth === '' || endMonth === '' || effects ==='') {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Required fields need a number, string, object, or boolean.');
   }
+  // End for required fields
+  const filter = { _id: seasonId }
+  const season = await Season.findOneAndUpdate(
+      filter,
+      { name, description, startMonth, endMonth, effects },
+      { new: true }
+  );
+
+  if (!season) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error(`No season found with an ID of ${seasonId}.`);
+  }
+
+  res.status(StatusCodes.OK).json({ season });
 };
 
+// @desc    Delete Season
+// @route   DELETE /api/v1/season/:seasonId
+// @access  Private (Super Admin)
 const deleteSeason = async (req, res) => {
-  try {
-    const season = await Season.findByIdAndDelete(req.params.seasonId);
-    if (!season) {
-      return res.status(404).json({ error: 'Season not found.' });
-    }
-    return res.json({ message: 'Season deleted successfully.' });
-  } catch (error) {
-    return res.status(500).json({ error: 'An error occurred while deleting the season.' });
+  const { seasonId } = req.params;
+  const season = await Season.findByIdAndDelete(seasonId);
+
+  if (!season) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error(`No Season found with an ID of ${seasonId}.`);
   }
+
+  res.status(StatusCodes.OK).json({ message: 'Season deleted successfully.' });
 };
 
-module.exports = { getSeasons, getCurrentSeason, createSeason, updateSeason, deleteSeason };
+module.exports = {
+  createSeason,
+  getAllSeasons,
+  updateSeason,
+  deleteSeason,
+};

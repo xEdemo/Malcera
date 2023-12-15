@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const seasonController = require('../controllers/seasonController.js');
 
-// Get all seasons
-router.get('/', seasonController.getSeasons);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get the current season
-router.get('/current', seasonController.getCurrentSeason);
+const {
+    createSeason,
+    getAllSeasons,
+    updateSeason,
+    deleteSeason,
+} = require('../controllers/seasonController.js');
 
 // Create a new season
-router.post('/', seasonController.createSeason);
-
-// Update a season by ID
-router.put('/:seasonId', seasonController.updateSeason);
-
-// Delete a season by ID
-router.delete('/:seasonId', seasonController.deleteSeason);
+router
+    .route('/')
+    .post([protect, superAdmin], createSeason)
+    .get([protect, admin], getAllSeasons);
+router
+    .route('/:seasonId')
+    .put([protect, superAdmin], updateSeason)
+    .delete([protect, superAdmin], deleteSeason);
 
 module.exports = router;
