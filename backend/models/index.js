@@ -20,6 +20,7 @@ const BlackMarket = require('./BlackMarket.js')
 const Season = require('./Season.js')
 const Weather = require('./Weather.js')
 const Temple = require('./Temple.js')
+const SentientItem = require('./SentientItem.js')
 
 module.exports = {
     User,
@@ -43,5 +44,6 @@ module.exports = {
     BlackMarket,
     Season,
     Weather,
-    Temple
+    Temple,
+    SentientItem
 };
