@@ -21,6 +21,7 @@ const Season = require('./Season.js')
 const Weather = require('./Weather.js')
 const Temple = require('./Temple.js')
 const SentientItem = require('./SentientItem.js')
+const Resource = require('./Resource.js')
 
 module.exports = {
     User,
@@ -45,5 +46,6 @@ module.exports = {
     Season,
     Weather,
     Temple,
-    SentientItem
+    SentientItem,
+    Resource
 };
