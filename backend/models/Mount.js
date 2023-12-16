@@ -19,6 +19,12 @@ const MountSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  rarity: {
+    type: String,
+    enum: ['common', 'uncommon', 'rare', 'epic', 'legendary'], // Use enum to restrict values
+    required: true,
+  }
+
 });
 
 // Create the Mount model
