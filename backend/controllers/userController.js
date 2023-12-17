@@ -277,4 +277,19 @@ const updateUser = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { registerUser, authUser, logoutUser, getUser, updateUser };
+// @desc    Delete user and associated data
+// route    DELETE /api/v1/user/:userId
+// @access  Private
+const deleteUser = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+
+    await Inventory.findByIdAndDelete(user.inventory);
+
+    await User.findByIdAndDelete(user._id);
+
+    res.status(StatusCodes.OK).json({ msg: 'User Deleted.' });
+});
+
+module.exports = { registerUser, authUser, logoutUser, getUser, updateUser, deleteUser };
