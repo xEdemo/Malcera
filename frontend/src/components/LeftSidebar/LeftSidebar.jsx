@@ -47,6 +47,8 @@ const LeftSidebar = () => {
     const { contextMenu, showContextMenu } = useContextMenu();
     const [contextMenuItemName, setContextMenuItemName] = useState('');
     const [checkStackable, setCheckStackable] = useState(false);
+    const [checkQuantity, setCheckQuantity] = useState(0);
+    const [checkIndex, setCheckIndex] = useState(null);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -69,6 +71,11 @@ const LeftSidebar = () => {
         } catch (error) {
             console.error('Error fetching inventory', error);
         }
+    };
+
+    const rerenderInventory = () => {
+        // Update state or perform actions to trigger a re-render
+        fetchInventoryData(); // Assuming fetchInventoryData will update the state
     };
 
     const handleToggleInventory = async () => {
@@ -185,6 +192,8 @@ const LeftSidebar = () => {
 
         e.target.style.cursor = 'grab';
 
+        setCheckIndex(newIndex);
+
         setDraggedItem(null);
         draggedItemRef.current = null;
     };
@@ -246,20 +255,20 @@ const LeftSidebar = () => {
         };
     }, []);
 
-    useEffect(() => {
-        if (
-            inventoryData &&
-            inventoryData.updatedInventory &&
-            inventoryData.updatedInventory.slots
-        ) {
-            dispatchInventory({
-                type: 'SET_INVENTORY_ITEMS',
-                payload: inventoryData.updatedInventory.slots,
-            });
-        } else if (error) {
-            console.error('Error fetching inventory:', error);
-        }
-    }, [sidebarState.isInventoryOpen, inventoryData, error]);
+    // useEffect(() => {
+    //     if (
+    //         inventoryData &&
+    //         inventoryData.updatedInventory &&
+    //         inventoryData.updatedInventory.slots
+    //     ) {
+    //         dispatchInventory({
+    //             type: 'SET_INVENTORY_ITEMS',
+    //             payload: inventoryData.updatedInventory.slots,
+    //         });
+    //     } else if (error) {
+    //         console.error('Error fetching inventory:', error);
+    //     }
+    // }, [sidebarState.isInventoryOpen, inventoryData, error]);
 
     useEffect(() => {
         if (!contextMenu.show) {
@@ -272,16 +281,29 @@ const LeftSidebar = () => {
         if (contextMenu.index !== undefined) {
             const itemName = inventoryItems[contextMenu.index]?.name;
             const isStackable = inventoryItems[contextMenu.index]?.stackable;
+            const stackQuantity = inventoryItems[contextMenu.index]?.quantity;
+            const itemIndex = contextMenu.index;
+
+            const checkForEmptySlot = inventoryItems.some(
+                (item) => item.name === 'Empty Slot'
+            );
+
             if (itemName !== contextMenuItemName) {
                 setContextMenuItemName(itemName);
             }
-            if (isStackable) {
+            if (isStackable && checkForEmptySlot) {
                 setCheckStackable(isStackable);
             } else {
                 setCheckStackable(false);
             }
+            if (stackQuantity) {
+                setCheckQuantity(stackQuantity);
+            }
+            if (itemIndex) {
+                setCheckIndex(itemIndex);
+            }
         }
-    }, [contextMenu, inventoryItems, contextMenuItemName]);
+    }, [contextMenu]);
 
     const inventoryHeight = sidebarState.isInventoryOpen ? 424 : 0;
     const characterHeight = sidebarState.isCharacterOpen ? 400 : 0;
@@ -295,6 +317,9 @@ const LeftSidebar = () => {
                 contextMenu={contextMenu}
                 itemName={contextMenuItemName}
                 splitStackableItem={checkStackable}
+                checkOriginalQuantity={checkQuantity}
+                index={checkIndex}
+                rerenderInventory={rerenderInventory}
             />
             <div className="left-sidebar-content-container">
                 <p onClick={handleToggleInventory}>

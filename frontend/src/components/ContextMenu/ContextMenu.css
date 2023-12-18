@@ -4,17 +4,20 @@
     z-index: 9999;
     background-color: #1a1a1a;
     max-width: 10rem;
-    transform: translate(-50%, -65%);
     border-radius: 5px;
 }
 
 /*
-Create an algorthium to handle an offset of y values based the conditional rendering of the children.
-Right now, this is a simple fix, but needs to be more dyanmic.
+Create an algorithm to handle an offset of y values based the conditional rendering of the children.
+Right now, this is a simple fix, but needs to be more dynamic.
 */
 
 .context-menu-main.stackable {
     transform: translate(-50%, -50%);
+}
+
+.context-menu-main.non-splitable{
+    transform: translate(-50%, -65%)
 }
 
 .context-menu-main p {

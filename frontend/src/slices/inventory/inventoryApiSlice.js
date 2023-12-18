@@ -17,10 +17,18 @@ export const inventoryApiSlice = apiSlice.injectEndpoints({
                 body: data,
             }),
         }),
+        splitStack: builder.mutation({
+            query: (data) => ({
+                url: `${INVENTORY_URL}/split`,
+                method: 'PUT',
+                body: data,
+            }),
+        }),
     }),
 });
 
 export const {
     useUpdateInventoryOnDropMutation,
     useGetInventoryQuery,
+    useSplitStackMutation,
 } = inventoryApiSlice;
