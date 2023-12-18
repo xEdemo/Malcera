@@ -12,7 +12,7 @@ const SentientItemSchema = new mongoose.Schema({
     required: true,
   },
   abilities: {
-    type: [String], // An array of abilities the item can grant to the wielder
+    type: String, // An array of abilities the item can grant to the wielder
   },
   alignment: {
     type: String, // Alignment of the item (e.g., Good, Evil, Neutral)
@@ -24,7 +24,7 @@ const SentientItemSchema = new mongoose.Schema({
     type: String, // The backstory and history of the item
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId, // Reference to the character who owns the item
+    type: String,        //mongoose.Schema.Types.ObjectId, // Reference to the character who owns the item
     ref: 'User', // Reference the User model
   },
 });

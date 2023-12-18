@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const templeController = require('../controllers/templeController.js');
+
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
+
+const {
+    createTemple,
+    getAllTemples,
+    updateTemple,
+    deleteTemple,
+} = require('../controllers/templeController.js');
 
 // Create a new temple
-router.post('/', templeController.createTemple);
-
-// Get all temples
-router.get('/', templeController.getAllTemples);
-
-// Get a specific temple by ID
-router.get('/:templeId', templeController.getTempleById);
-
-// Update a temple by ID
-router.put('/:templeId', templeController.updateTemple);
-
-// Delete a temple by ID
-router.delete('/:templeId', templeController.deleteTemple);
+router
+    .route('/')
+    .post([protect, superAdmin], createTemple)
+    .get([protect, admin], getAllTemples);
+router
+    .route('/:templeId')
+    .put([protect, superAdmin], updateTemple)
+    .delete([protect, superAdmin], deleteTemple);
 
 module.exports = router;

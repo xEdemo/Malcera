@@ -19,7 +19,7 @@ const TempleSchema = new mongoose.Schema({
     required: true,
   },
   clergy: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type:  String,         //mongoose.Schema.Types.ObjectId,
     ref: 'Npc', // Reference to NPC characters belonging to the religious order
   }],
   services: {

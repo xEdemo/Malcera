@@ -1,17 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const bankController = require('../controllers/bankController');
+
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
+
+const {
+    createBank,
+    getAllBanks,
+    updateBank,
+    deleteBank,
+} = require('../controllers/bankController.js');
 
 // Create a new bank
-router.post('/', bankController.createBank);
-
-// Get all banks
-router.get('/', bankController.getAllBanks);
-
-// Update a bank by ID
-router.put('/:bankId', bankController.updateBank);
-
-// Delete a bank by ID
-router.delete('/:bankId', bankController.deleteBank);
+router
+    .route('/')
+    .post([protect, superAdmin], createBank)
+    .get([protect, admin], getAllBanks);
+router
+    .route('/:bankId')
+    .put([protect, superAdmin], updateBank)
+    .delete([protect, superAdmin], deleteBank);
 
 module.exports = router;

@@ -7,7 +7,12 @@ const LostLanguageSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  symbols: [String], // An array of symbols in the language
+  description: {
+    type:String
+  },
+  symbols: {
+    type: String // An array of symbols in the language
+  },
   difficulty: {
     type: String,
     enum: ['basic', 'intermediate', 'advanced'],

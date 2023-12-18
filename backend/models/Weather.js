@@ -5,6 +5,11 @@ const WeatherSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+  description: {
+    type: String,
+    required: true,
+  },
   effects: {
     type: String, // You can customize this based on your needs
     required: true,

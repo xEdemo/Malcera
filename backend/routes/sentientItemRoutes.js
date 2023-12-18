@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const sentientItemController = require('../controllers/sentientItemController.js');
 
-// Create a new sentient item
-router.post('/', sentientItemController.createSentientItem);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all sentient items
-router.get('/', sentientItemController.getAllSentientItems);
+const {
+    createSentientItem,
+    getAllSentientItems,
+    updateSentientItem,
+    deleteSentientItem,
+} = require('../controllers/sentientItemController');
 
-// Get a sentient item by ID
-router.get('/:id', sentientItemController.getSentientItemById);
-
-// Update a sentient item by ID
-router.put('/:id', sentientItemController.updateSentientItem);
-
-// Delete a sentient item by ID
-router.delete('/:id', sentientItemController.deleteSentientItem);
+// Create a new sentientItem
+router
+    .route('/')
+    .post([protect, superAdmin], createSentientItem)
+    .get([protect, admin], getAllSentientItems);
+router
+    .route('/:sentientItemId')
+    .put([protect, superAdmin], updateSentientItem)
+    .delete([protect, superAdmin], deleteSentientItem);
 
 module.exports = router;

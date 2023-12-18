@@ -5,9 +5,9 @@ const { Mount } = require('../models');
 // @route   POST /api/v1/mount
 // @access  Private (Super Admin)
 const createMount = async (req, res) => {
-    const { name, description, speed, type } = req.body;
+    const { name, description, speed, type, rarity } = req.body;
 
-    if (!name || !description || !speed || !type) {
+    if (!name || !description || !speed || !type || !rarity) {
         res.status(StatusCodes.BAD_REQUEST);
         throw new Error('Please fill out all required fields.');
     }
@@ -17,6 +17,7 @@ const createMount = async (req, res) => {
         description,
         speed,
         type,
+        rarity,
     });
 
     await mount.save();
@@ -27,7 +28,7 @@ const createMount = async (req, res) => {
 // @route   GET /api/v1/mount
 // @access  Private (Admin)
 const getAllMounts = async (req, res) => {
-    const { name, speed, type, sort, fields } = req.query;
+    const { name, speed, type, rarity, sort, fields } = req.query;
     const queryObject = {};
     if (name) {
         // $options: 'i' is non-case sensitive
@@ -39,6 +40,11 @@ const getAllMounts = async (req, res) => {
     if (type) {
         queryObject.type = { $regex: type, $options: 'i' };
     }
+    if (rarity) {
+        queryObject.rarity = { $regex: rarity, $options: 'i' };
+    }
+
+
 
     let result = Mount.find(queryObject);
     // Sort
@@ -68,10 +74,10 @@ const getAllMounts = async (req, res) => {
 // @access  Private (Super Admin)
 const updateMount = async (req, res) => {
     const { mountId } = req.params;
-    const { name, description, speed, type } = req.body;
+    const { name, description, speed, type, rarity } = req.body;
 
     // For required fields
-    if (name === '' || description === '' || speed === '' || type === '') {
+    if (name === '' || description === '' || speed === '' || type === ''|| rarity === '') {
         res.status(StatusCodes.BAD_REQUEST);
         throw new Error('Required fields need a number, string, object, or boolean.');
     }
@@ -79,7 +85,7 @@ const updateMount = async (req, res) => {
     const filter = { _id: mountId }
     const mount = await Mount.findOneAndUpdate(
         filter,
-        { name, description, speed, type },
+        { name, description, speed, type, rarity },
         { new: true }
     );
 

@@ -19,7 +19,7 @@ const ReligiousOrderSchema = new mongoose.Schema({
     required: true,
   },
   members: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,            //mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
   headquarters: {
@@ -27,19 +27,19 @@ const ReligiousOrderSchema = new mongoose.Schema({
     required: true,
   },
   temples: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,                  //mongoose.Schema.Types.ObjectId,
     ref: 'Temple',
   }],
   rivals: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,                  //mongoose.Schema.Types.ObjectId,
     ref: 'ReligiousOrder',
   }],
   alliances: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,                  //mongoose.Schema.Types.ObjectId,
     ref: 'ReligiousOrder',
   }],
   leader: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,                    //mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
 });

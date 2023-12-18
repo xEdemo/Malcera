@@ -9,14 +9,12 @@ const ForbiddenLibrarySchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true,
   },
   guardian: {
     type: String,
-    required: true,
   },
   contents: {
-    type: [String], // An array of forbidden tomes or texts
+    type: String, // An array of forbidden tomes or texts
   },
   questRequired: {
     type: String, // Quest or condition required to access the library

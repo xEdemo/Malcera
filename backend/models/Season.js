@@ -1,21 +1,32 @@
-// models/Season.js
 const mongoose = require('mongoose');
 
-const seasonSchema = new mongoose.Schema({
+// Define the Season schema
+const SeasonSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
+    unique: true, // Ensure that names are unique
   },
-  description: String,
-  startMonth: Number,
-  endMonth: Number,
-  effects: [String], // Effects of the season (e.g., increased fire damage in Hell's summer)
+  description: {
+    type: String,
+    required: true,
+  },
+  startMonth: {
+    type: Number,
+    required: true,
+  },
+  endMonth: {
+    type: Number,
+    required: true,
+  },
+  effects: String,
+
 });
 
-const Season = mongoose.model('Season', seasonSchema);
+// Create the Season model
+const Season = mongoose.model('Season', SeasonSchema);
 
 module.exports = Season;
 
 
-// handles the season for roonie the retard
+// handles seasons for roonie the retard

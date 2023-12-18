@@ -1,20 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const religiousEventController = require('../controllers/religiousEventController.js');
 
-// Create a new religious event
-router.post('/', religiousEventController.createReligiousEvent);
+const {
+    protect,
+    admin,
+    superAdmin,
+} = require('../middleware/authMiddleware.js');
 
-// Get all religious events
-router.get('/', religiousEventController.getAllReligiousEvents);
+const {
+    createReligiousEvent,
+    getAllReligiousEvents,
+    updateReligiousEvent,
+    deleteReligiousEvent,
+} = require('../controllers/religiousEventController.js');
 
-// Get a religious event by ID
-router.get('/:id', religiousEventController.getReligiousEventById);
+// Create a new religiousEvent
+router
+    .route('/')
+    .post([protect, superAdmin], createReligiousEvent)
+    .get([protect, admin], getAllReligiousEvents);
+router
+    .route('/:religiousEventId')
+    .put([protect, superAdmin], updateReligiousEvent)
+    .delete([protect, superAdmin], deleteReligiousEvent);
 
-// Update a religious event by ID
-router.put('/:id', religiousEventController.updateReligiousEvent);
-
-// Delete a religious event by ID
-router.delete('/:id', religiousEventController.deleteReligiousEvent);
 
 module.exports = router;

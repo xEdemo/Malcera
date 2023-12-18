@@ -23,8 +23,8 @@ const DemonicContractSchema = new mongoose.Schema({
     required: true,
   },
   holder: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Player', // Reference to the player who holds the contract
+    type: String,                      //mongoose.Schema.Types.ObjectId,
+    required: true,                     //'Player', // Reference to the player who holds the contract
   },
   isActive: {
     type: Boolean,
