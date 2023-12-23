@@ -24,6 +24,13 @@ export const inventoryApiSlice = apiSlice.injectEndpoints({
                 body: data,
             }),
         }),
+        combineStack: builder.mutation({
+            query: (data) => ({
+                url: `${INVENTORY_URL}/combine`,
+                method: `PUT`,
+                body: data,
+            }),
+        }),
     }),
 });
 
@@ -31,4 +38,5 @@ export const {
     useUpdateInventoryOnDropMutation,
     useGetInventoryQuery,
     useSplitStackMutation,
+    useCombineStackMutation,
 } = inventoryApiSlice;

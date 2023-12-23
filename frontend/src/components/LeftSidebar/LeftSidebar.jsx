@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
     useUpdateInventoryOnDropMutation,
     useGetInventoryQuery,
+    useCombineStackMutation,
 } from '../../slices/inventory/inventoryApiSlice.js';
 import {
     updateInventoryOnChange,
@@ -49,6 +50,8 @@ const LeftSidebar = () => {
     const [checkStackable, setCheckStackable] = useState(false);
     const [checkQuantity, setCheckQuantity] = useState(0);
     const [checkIndex, setCheckIndex] = useState(null);
+
+    const [combineStack] = useCombineStackMutation();
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -167,24 +170,65 @@ const LeftSidebar = () => {
             updatedItems[draggedItemRef.current] = updatedItems[newIndex];
             updatedItems[newIndex] = tempItem;
 
-            dispatchInventory({
-                type: 'SET_UPDATED_INVENTORY_ITEMS',
-                payload: updatedItems,
-            });
+            // Makes inventory seem less reboundy
+            // dispatchInventory({
+            //     type: 'SET_UPDATED_INVENTORY_ITEMS',
+            //     payload: updatedItems,
+            // });
 
-            const res = await onDrop({
-                changedIndices: [draggedItemRef.current, newIndex],
-                updatedItems,
-            }).unwrap();
+            // console.log(
+            //     draggedItem.name,
+            //     updatedItems[draggedItemRef.current].name,
+            //     draggedItem.stackable,
+            //     updatedItems[draggedItemRef.current].stackable,
+            // );
 
-            if (res.updatedInventory && res.updatedInventory.slots) {
-                dispatchInventory({
-                    type: 'SET_INVENTORY_ITEMS',
-                    payload: res.updatedInventory.slots,
-                });
-                console.log('API Response:', res);
-            } else {
-                console.error('Invalid response format from server:', res);
+            if (
+                draggedItem.name !==
+                    updatedItems[draggedItemRef.current].name &&
+                !(
+                    draggedItem.stackable &&
+                    updatedItems[draggedItemRef.current].stackable
+                )
+            ) {
+                const res = await onDrop({
+                    changedIndices: [draggedItemRef.current, newIndex],
+                    updatedItems,
+                }).unwrap();
+
+                if (res.updatedInventory && res.updatedInventory.slots) {
+                    dispatchInventory({
+                        type: 'SET_INVENTORY_ITEMS',
+                        payload: res.updatedInventory.slots,
+                    });
+                    console.log('API Response:', res);
+                } else {
+                    console.error(
+                        'Invalid response format from server on drop:',
+                        res
+                    );
+                }
+            } else if (
+                draggedItem.stackable &&
+                updatedItems[draggedItemRef.current].stackable
+            ) {
+                const res = await combineStack({
+                    emptySlotIndex: draggedItemRef.current,
+                    combinedIndex: newIndex,
+                }).unwrap();
+
+                if (res.updatedInventory && res.updatedInventory.slots) {
+                    dispatchInventory({
+                        type: 'SET_INVENTORY_ITEMS',
+                        payload: res.updatedInventory.slots,
+                    });
+                    console.log('API Response for combine:', res);
+                } else {
+                    console.error(
+                        'Invalid response format from server on combine:',
+                        res
+                    );
+                }
             }
         } catch (err) {
             console.error('Error updating inventory', err);

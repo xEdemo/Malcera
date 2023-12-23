@@ -1,4 +1,4 @@
-const { Inventory, User } = require('../models');
+const { Inventory, User, Item } = require('../models');
 const { StatusCodes } = require('http-status-codes');
 
 // @desc    Updates Inventory on Drag
@@ -64,11 +64,9 @@ const splitStackableItem = async (req, res) => {
     }
 
     if (!Number.isInteger(amount) || amount <= 0) {
-        return res
-            .status(StatusCodes.BAD_REQUEST)
-            .json({
-                msg: 'Please enter a valid whole number greater than zero.',
-            });
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            msg: 'Please enter a valid whole number greater than zero.',
+        });
     }
 
     if (!index) {
@@ -140,7 +138,43 @@ const splitStackableItem = async (req, res) => {
 // @route   PUT /api/v1/inventory/combine
 // @access  Private
 const combineStackableItems = async (req, res) => {
-    res.status(StatusCodes.OK).json({ msg: `YUP` });
+    const userId = req.user._id.toString();
+    const { emptySlotIndex, combinedIndex } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(`No user found with id ${userId}.`);
+    }
+
+    if (isNaN(emptySlotIndex) || isNaN(combinedIndex)) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(
+            `There was an error fetching the indicies for combine.`
+        );
+    }
+
+    const inventory = await Inventory.findById(user.inventory);
+
+    if (!inventory.slots[emptySlotIndex].stackable || !inventory.slots[combinedIndex].stackable) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            msg: 'Both items are not stackable.',
+        });
+    }
+
+    const draggedQuantity = inventory.slots[emptySlotIndex].quantity;
+
+    const emptySlotId = '655ac0ef72adb7c251f09e80';
+    const emptySlotItem = await Item.findById(emptySlotId);
+
+    inventory.slots[emptySlotIndex] = emptySlotItem;
+
+    inventory.slots[combinedIndex].quantity += draggedQuantity;
+
+    await inventory.save();
+
+    res.status(StatusCodes.OK).json({ updatedInventory: inventory });
 };
 
 module.exports = {
