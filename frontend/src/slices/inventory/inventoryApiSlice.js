@@ -31,6 +31,13 @@ export const inventoryApiSlice = apiSlice.injectEndpoints({
                 body: data,
             }),
         }),
+        removeItem: builder.mutation({
+            query: (data) => ({
+                url: `${INVENTORY_URL}/remove`,
+                method: 'PUT',
+                body: data,
+            }),
+        }),
     }),
 });
 
@@ -39,4 +46,5 @@ export const {
     useGetInventoryQuery,
     useSplitStackMutation,
     useCombineStackMutation,
+    useRemoveItemMutation,
 } = inventoryApiSlice;

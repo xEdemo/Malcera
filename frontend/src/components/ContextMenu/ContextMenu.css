@@ -5,6 +5,7 @@
     background-color: #1a1a1a;
     max-width: 10rem;
     border-radius: 5px;
+    transform: translate(-50%, -65%);
 }
 
 /*
@@ -34,6 +35,15 @@ Right now, this is a simple fix, but needs to be more dynamic.
 
 .context-menu-main p:hover {
     background-color: #313338;
+}
+
+.item-name-context-menu {
+    color: gold;
+}
+
+.context-menu-main p.item-name-context-menu:hover {
+    cursor: default;
+    background-color: #1a1a1a;
 }
 
 .context-menu-main p:first-child:hover {

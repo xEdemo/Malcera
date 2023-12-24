@@ -1,5 +1,8 @@
 import { memo, useState, useEffect, useReducer } from 'react';
-import { useSplitStackMutation } from '../../slices/inventory/inventoryApiSlice.js';
+import {
+    useSplitStackMutation,
+    useRemoveItemMutation,
+} from '../../slices/inventory/inventoryApiSlice.js';
 import { toast } from 'react-toastify';
 
 const ContextMenu = ({
@@ -14,20 +17,42 @@ const ContextMenu = ({
     const [isSplitting, setIsSplitting] = useState(false);
     const [splitStack] = useSplitStackMutation();
 
+    const [removeItem] = useRemoveItemMutation();
+
     const handleSplitStack = async () => {
         try {
             const res = await splitStack({
                 index: index,
                 amount: splitAmount,
             });
+            console.log(res);
             if (res.data) {
                 rerenderInventory();
+            }
+            if (res.error && res.error.data && res.error.data.message) {
+                toast.error(res.error.data.message);
             }
         } catch (err) {
             toast.error('Error splitting stack.');
         } finally {
             // Reset the state after the split is complete
             setIsSplitting(false);
+        }
+    };
+
+    const handleRemoveItem = async () => {
+        try {
+            const res = await removeItem({
+                index: index
+            });
+            if (res.data) {
+                rerenderInventory();
+            }
+            if (res.error && res.error.data && res.error.data.message) {
+                toast.error(res.error.data.message);
+            }
+        } catch (err) {
+            toast.error('Error deleting an item.');
         }
     };
 
@@ -67,12 +92,18 @@ const ContextMenu = ({
                         left: `${contextMenu.x}px`,
                     }}
                 >
+                    {itemName && (
+                        <p className="item-name-context-menu">{itemName}</p>
+                    )}
                     <p>Context Menu</p>
-                    {itemName && <p>{itemName}</p>}
                     {splitStackableItem && checkOriginalQuantity > 1 && (
                         <p onClick={() => setIsSplitting(true)}>Split</p>
                     )}
-                    <p>Bye &#8250;</p>
+                    {itemName && (
+                        <p style={{ color: 'red' }} onClick={handleRemoveItem}>
+                            Delete
+                        </p>
+                    )}
                 </div>
             )}
             {isSplitting && (

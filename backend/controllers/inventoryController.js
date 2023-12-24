@@ -8,16 +8,16 @@ const updateInventoryOnDrop = async (req, res) => {
     const userId = req.user._id.toString();
     const { updatedItems, changedIndices } = req.body;
 
+    if (!updatedItems || !changedIndices) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(`No inventory data update provided.`);
+    }
+
     const user = await User.findById(userId);
 
     if (!user) {
         res.status(StatusCodes.BAD_REQUEST);
         throw new Error(`No user found with id ${userId}.`);
-    }
-
-    if (!updatedItems || !changedIndices) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No inventory data update provided.`);
     }
 
     const inventory = await Inventory.findById(user.inventory);
@@ -54,9 +54,6 @@ const getInventory = async (req, res) => {
 const splitStackableItem = async (req, res) => {
     const userId = req.user._id.toString();
     const { index, amount } = req.body;
-    const user = await User.findById(userId);
-
-    //console.log('Amount:', amount, 'Index:', index);
 
     if (!amount) {
         res.status(StatusCodes.BAD_REQUEST);
@@ -69,10 +66,12 @@ const splitStackableItem = async (req, res) => {
         });
     }
 
-    if (!index) {
+    if (!Number.isInteger(index)) {
         res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`Item was moved from it's original index.`);
+        throw new Error(`Index is not a number.`);
     }
+
+    const user = await User.findById(userId);
 
     if (!user) {
         res.status(StatusCodes.BAD_REQUEST);
@@ -141,13 +140,6 @@ const combineStackableItems = async (req, res) => {
     const userId = req.user._id.toString();
     const { emptySlotIndex, combinedIndex } = req.body;
 
-    const user = await User.findById(userId);
-
-    if (!user) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No user found with id ${userId}.`);
-    }
-
     if (isNaN(emptySlotIndex) || isNaN(combinedIndex)) {
         res.status(StatusCodes.BAD_REQUEST);
         throw new Error(
@@ -155,18 +147,42 @@ const combineStackableItems = async (req, res) => {
         );
     }
 
+    const user = await User.findById(userId);
+
+    if (!user) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(`No user found with id ${userId}.`);
+    }
+
     const inventory = await Inventory.findById(user.inventory);
 
-    if (!inventory.slots[emptySlotIndex].stackable || !inventory.slots[combinedIndex].stackable) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            msg: 'Both items are not stackable.',
-        });
+    if (
+        !inventory.slots[emptySlotIndex].stackable ||
+        !inventory.slots[combinedIndex].stackable
+    ) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(
+            'Both items, or one of the two items are not stackable.'
+        );
+    }
+
+    if (
+        inventory.slots[emptySlotIndex].name !==
+        inventory.slots[combinedIndex].name
+    ) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error('Items do not match based on their names.')
     }
 
     const draggedQuantity = inventory.slots[emptySlotIndex].quantity;
 
     const emptySlotId = '655ac0ef72adb7c251f09e80';
     const emptySlotItem = await Item.findById(emptySlotId);
+
+    if (!emptySlotItem) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error('Could not find empty slot item.');
+    }
 
     inventory.slots[emptySlotIndex] = emptySlotItem;
 
@@ -177,9 +193,46 @@ const combineStackableItems = async (req, res) => {
     res.status(StatusCodes.OK).json({ updatedInventory: inventory });
 };
 
+// @desc    Removes an item from inventory
+// @route   PUT /api/v1/inventory/remove
+// @access  Private
+const removeItem = async (req, res) => {
+    const userId = req.user._id.toString();
+    const { index } = req.body;
+
+    if (!Number.isInteger(index)) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(`Index is not a number.`);
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(`No user found with id ${userId}.`);
+    }
+
+    const inventory = await Inventory.findById(user.inventory);
+
+    const emptySlotId = '655ac0ef72adb7c251f09e80';
+    const emptySlotItem = await Item.findById(emptySlotId);
+
+    if (!emptySlotItem) {
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error('Could not find empty slot item.');
+    }
+
+    inventory.slots[index] = emptySlotItem;
+
+    await inventory.save();
+
+    res.status(StatusCodes.OK).json({ msg: 'Item removed.' });
+};
+
 module.exports = {
     updateInventoryOnDrop,
     getInventory,
     splitStackableItem,
     combineStackableItems,
+    removeItem,
 };

@@ -21,7 +21,7 @@ import {
 
 const inventoryRows = 8;
 const inventoryColumns = 5;
-const inventorySlots = 40;
+const inventorySlots = inventoryRows * inventoryColumns;
 
 const LeftSidebar = () => {
     const [sidebarState, dispatchSidebar] = useReducer(sidebarReducer, {
@@ -60,15 +60,15 @@ const LeftSidebar = () => {
 
     const fetchInventoryData = async () => {
         try {
-            const response = await dispatch(getInventory());
+            const res = await dispatch(getInventory());
             if (
-                response.payload &&
-                response.payload.updatedInventory &&
-                response.payload.updatedInventory.slots
+                res.payload &&
+                res.payload.updatedInventory &&
+                res.payload.updatedInventory.slots
             ) {
                 dispatchInventory({
                     type: 'SET_INVENTORY_ITEMS',
-                    payload: response.payload.updatedInventory.slots,
+                    payload: res.payload.updatedInventory.slots,
                 });
             }
         } catch (error) {
@@ -77,8 +77,7 @@ const LeftSidebar = () => {
     };
 
     const rerenderInventory = () => {
-        // Update state or perform actions to trigger a re-render
-        fetchInventoryData(); // Assuming fetchInventoryData will update the state
+        fetchInventoryData(); 
     };
 
     const handleToggleInventory = async () => {
@@ -343,7 +342,7 @@ const LeftSidebar = () => {
             if (stackQuantity) {
                 setCheckQuantity(stackQuantity);
             }
-            if (itemIndex) {
+            if (itemIndex !== null) {
                 setCheckIndex(itemIndex);
             }
         }
