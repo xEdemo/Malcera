@@ -17,6 +17,7 @@ const ContextMenu = ({
     const [isSplitting, setIsSplitting] = useState(false);
     const [splitStack] = useSplitStackMutation();
 
+    const [isRemoving, setIsRemoving] = useState(false);
     const [removeItem] = useRemoveItemMutation();
 
     const handleSplitStack = async () => {
@@ -35,7 +36,6 @@ const ContextMenu = ({
         } catch (err) {
             toast.error('Error splitting stack.');
         } finally {
-            // Reset the state after the split is complete
             setIsSplitting(false);
         }
     };
@@ -43,7 +43,7 @@ const ContextMenu = ({
     const handleRemoveItem = async () => {
         try {
             const res = await removeItem({
-                index: index
+                index: index,
             });
             if (res.data) {
                 rerenderInventory();
@@ -53,6 +53,8 @@ const ContextMenu = ({
             }
         } catch (err) {
             toast.error('Error deleting an item.');
+        } finally {
+            setIsRemoving(false);
         }
     };
 
@@ -80,6 +82,8 @@ const ContextMenu = ({
         setSplitAmount(Math.floor(checkOriginalQuantity / 2));
     }, [checkOriginalQuantity]);
 
+    console.log('itemName:', itemName);
+
     return (
         <>
             {contextMenu.show && (
@@ -100,36 +104,101 @@ const ContextMenu = ({
                         <p onClick={() => setIsSplitting(true)}>Split</p>
                     )}
                     {itemName && (
-                        <p style={{ color: 'red' }} onClick={handleRemoveItem}>
+                        <p
+                            style={{ color: 'red' }}
+                            onClick={() => setIsRemoving(true)}
+                        >
                             Delete
                         </p>
                     )}
                 </div>
             )}
-            {isSplitting && (
-                <div className="split-context-menu">
-                    <label htmlFor="splitAmount">
-                        Split Amount:{' '}
-                        <input
-                            type="number"
-                            min={1}
-                            max={checkOriginalQuantity}
-                            step={1}
-                            value={splitAmount === 0 ? '' : splitAmount}
-                            onChange={handleInputChange}
-                        />
-                    </label>
-                    <input
-                        type="range"
-                        id="splitAmount"
-                        name="splitAmount"
-                        min={1}
-                        max={checkOriginalQuantity} // Adjust the max value based on your requirements
-                        value={splitAmount === 0 ? '' : splitAmount}
-                        onChange={handleSliderChange}
-                    />
-                    <button onClick={() => setIsSplitting(false)}>Close</button>
-                    <button onClick={handleSplitStack}>Confirm</button>
+            {isSplitting && !isRemoving && (
+                <>
+                    <div
+                        className={`left-sidebar-content-container ${
+                            isSplitting ? 'splitting' : ''
+                        }`}
+                    >
+                        <div
+                            className={`inventory-container ${
+                                isSplitting ? 'splitting' : ''
+                            }`}
+                        >
+                            <div className="split-context-menu">
+                                <div className="range ltpurple split-range">
+                                    <input
+                                        type="range"
+                                        id="splitAmount"
+                                        name="splitAmount"
+                                        min={1}
+                                        max={checkOriginalQuantity}
+                                        value={
+                                            splitAmount === 0 ? '' : splitAmount
+                                        }
+                                        onChange={handleSliderChange}
+                                    />
+                                </div>
+                                <label htmlFor="splitAmount">
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={checkOriginalQuantity}
+                                        step={1}
+                                        value={
+                                            splitAmount === 0 ? '' : splitAmount
+                                        }
+                                        onChange={handleInputChange}
+                                    />{' '}
+                                    / {checkOriginalQuantity}
+                                </label>
+                                <button
+                                    className="close-btn-split"
+                                    onClick={() => setIsSplitting(false)}
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    className="confirm-btn-split"
+                                    onClick={handleSplitStack}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+            {isRemoving && !isSplitting && (
+                <div
+                    className={`left-sidebar-content-container ${
+                        isRemoving ? 'deleting' : ''
+                    }`}
+                >
+                    <div
+                        className={`inventory-container ${
+                            isRemoving ? 'deleting' : ''
+                        }`}
+                    >
+                        <div className="delete-context-menu">
+                            <p>
+                                Are you sure you want to delete the item '
+                                {itemName}'?
+                            </p>
+                            <button
+                                className="close-btn-delete"
+                                onClick={() => setIsRemoving(false)}
+                            >
+                                Close
+                            </button>
+                            <button
+                                className="confirm-btn-delete"
+                                onClick={handleRemoveItem}
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </>

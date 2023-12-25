@@ -315,7 +315,7 @@ const LeftSidebar = () => {
 
     useEffect(() => {
         if (!contextMenu.show) {
-            setContextMenuItemName('');
+            // setContextMenuItemName('');
             setCheckStackable(false);
         }
     }, [contextMenu.show]);
@@ -331,7 +331,7 @@ const LeftSidebar = () => {
                 (item) => item.name === 'Empty Slot'
             );
 
-            if (itemName !== contextMenuItemName) {
+            if (itemName) {
                 setContextMenuItemName(itemName);
             }
             if (isStackable && checkForEmptySlot) {
