@@ -18,10 +18,6 @@
     overflow-y: auto;
 }
 
-.chat-box-message-region p:nth-child(2){
-    background-color: grey;
-}
-
 .chat-box-input-region {
     display: flex;
     align-items: center;
