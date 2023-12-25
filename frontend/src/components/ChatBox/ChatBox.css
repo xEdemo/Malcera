@@ -1,0 +1,37 @@
+.chat-box-container{
+    width: 100%;
+    /* Maybe change it so the user can adjust the height? */
+    height: 25%;
+    background-color: var(--theme-grey-900);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box-message-region{
+    height: 100%;
+    border: 1px black solid;
+    margin: 3px;
+    overflow-y: auto;
+}
+
+.chat-box-message-region p:nth-child(2){
+    background-color: grey;
+}
+
+.chat-box-input-region {
+    display: flex;
+    align-items: center;
+}
+
+.chat-box-container div b {
+    font-size: 1.4rem;
+    margin-right: 3px;
+}
+
+.chat-box-container div input {
+    width: 100%;
+}

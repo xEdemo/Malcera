@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import GameHeader from '../GameHeader/GameHeader.jsx';
-import LeftSidebar from '../LeftSidebar/LeftSidebar.jsx';
-import RightSidebar from '../RightSidebar/RightSidebar.jsx';
 import { Outlet } from 'react-router-dom';
+import { ChatBox, GameHeader, LeftSidebar, RightSidebar } from '../index.jsx';
 
 const Layout = () => {
     const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
@@ -20,7 +18,7 @@ const Layout = () => {
                 isRightSidebarOpen={isRightSidebarOpen}
                 setIsRightSidebarOpen={setIsRightSidebarOpen}
             />
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex' }}>
                 <div
                     className={
                         isLeftSidebarOpen ? 'left-sidebar' : 'left-sidebar-open'
@@ -34,6 +32,7 @@ const Layout = () => {
                     }`}
                 >
                     <Outlet />
+                    <ChatBox />
                 </div>
                 <div
                     className={

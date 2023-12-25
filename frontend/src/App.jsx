@@ -16,6 +16,7 @@ import './pages/Landing/Landing.css';
 import './pages/NotFound/NotFound.css';
 import './pages/Login/LoginForm.css';
 import './pages/SignUp/SignUpForm.css';
+import './components/ChatBox/ChatBox.css'
 
 function App() {
     return (
