@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler');
 const { User } = require('../models');
 
 const initWebSocket = (server) => {
-    const wss = new ws.Server({ server });
+    const wss = new ws.Server({server});
 
     wss.on(
         'connection',
@@ -27,7 +27,8 @@ const initWebSocket = (server) => {
                             ).select('-password -__v');
                             if (req.user) {
                                 connection.users = req.user;
-                                //console.log(connection.users);
+                                // Broadcast the user who just connected
+                                broadcastOnlineUsers();
                             }
                         } catch (error) {
                             throw new Error('Not authorized. Invalid token.');
@@ -35,16 +36,6 @@ const initWebSocket = (server) => {
                     }
                 }
             }
-            //console.log([...wss.clients].map(c => c.users.username));
-            [...wss.clients].forEach((client) => {
-                client.send(
-                    JSON.stringify({
-                        online: [...wss.clients].map((c) => ({
-                            user: c.users,
-                        })),
-                    })
-                );
-            });
 
             connection.on('message', (message) => {
                 try {
@@ -54,21 +45,45 @@ const initWebSocket = (server) => {
                     console.error('Error parsing incoming message:', error);
                 }
             });
+
+            connection.on('close', () => {
+                // Broadcast the user who just disconnected
+                broadcastOnlineUsers();
+            });
         })
     );
+
+    const broadcastOnlineUsers = () => {
+        [...wss.clients].forEach((client) => {
+            client.send(
+                JSON.stringify({
+                    online: [...wss.clients].map((c) => ({
+                        user: c.users,
+                    })),
+                })
+            );
+        });
+    };
+
     const handleIncomingMessage = (message, senderConnection) => {
         if (message && message.globalMessage) {
             const globalMessage = {
-                sender: senderConnection,
-                content: message.globalMessage,
+                sender: senderConnection.users.username,
+                content: message.globalMessage.content,
+                timestamp: new Date().toLocaleTimeString('en-US', {
+                    hour12: false,
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                }),
             };
 
             // Broadcast the global message to all clients
             [...wss.clients].forEach((client) => {
-                client.send(JSON.stringify({ globalMessage }));
+                client.send(JSON.stringify({globalMessage}));
             });
         }
     };
-};
+}
 
-module.exports = initWebSocket;
+    module.exports = initWebSocket;
