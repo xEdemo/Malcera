@@ -26,7 +26,6 @@ const ContextMenu = ({
                 index: index,
                 amount: splitAmount,
             });
-            console.log(res);
             if (res.data) {
                 rerenderInventory();
             }
@@ -81,8 +80,6 @@ const ContextMenu = ({
     useEffect(() => {
         setSplitAmount(Math.floor(checkOriginalQuantity / 2));
     }, [checkOriginalQuantity]);
-
-    console.log('itemName:', itemName);
 
     return (
         <>

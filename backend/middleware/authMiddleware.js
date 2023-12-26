@@ -4,9 +4,11 @@ const { User } = require('../models');
 const { StatusCodes } = require('http-status-codes');
 
 const protect = asyncHandler(async (req, res, next) => {
-    let token;
+    //const token = req.signedCookies.jwt;
 
-    token = req.signedCookies.jwt;
+    const token = req.cookies.jwt;
+
+    //console.log(token);
 
     if (token) {
         try {
