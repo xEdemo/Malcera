@@ -27,7 +27,7 @@ const initWebSocket = (server) => {
                             ).select('-password -__v');
                             if (req.user) {
                                 connection.users = req.user;
-                                //console.log(connection.user);
+                                //console.log(connection.users);
                             }
                         } catch (error) {
                             throw new Error('Not authorized. Invalid token.');
@@ -45,8 +45,30 @@ const initWebSocket = (server) => {
                     })
                 );
             });
+
+            connection.on('message', (message) => {
+                try {
+                    const parsedMessage = JSON.parse(message);
+                    handleIncomingMessage(parsedMessage, connection);
+                } catch (error) {
+                    console.error('Error parsing incoming message:', error);
+                }
+            });
         })
     );
+    const handleIncomingMessage = (message, senderConnection) => {
+        if (message && message.globalMessage) {
+            const globalMessage = {
+                sender: senderConnection,
+                content: message.globalMessage,
+            };
+
+            // Broadcast the global message to all clients
+            [...wss.clients].forEach((client) => {
+                client.send(JSON.stringify({ globalMessage }));
+            });
+        }
+    };
 };
 
 module.exports = initWebSocket;
