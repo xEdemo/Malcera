@@ -59,7 +59,7 @@ const initWebSocket = (server) => {
     const handleIncomingMessage = (message, senderConnection) => {
         if (message && message.globalMessage) {
             const globalMessage = {
-                sender: senderConnection,
+                sender: senderConnection.users?.username,
                 content: message.globalMessage,
             };
 

@@ -1,4 +1,4 @@
-.chat-box-container{
+.chat-box-container {
     width: 100%;
     /* Maybe change it so the user can adjust the height? */
     height: 25%;
@@ -11,11 +11,12 @@
     flex-direction: column;
 }
 
-.chat-box-message-region{
+.chat-box-message-region {
     height: 100%;
     border: 1px black solid;
     margin: 3px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .chat-box-input-region {
@@ -30,4 +31,14 @@
 
 .chat-box-container div input {
     width: 100%;
+}
+
+.hidden-chat-box {
+    display: none;
+}
+
+.open-chat-box-button {
+    position: fixed;
+    bottom: 0;
+    left: 0;
 }

@@ -448,7 +448,18 @@ const LeftSidebar = () => {
                         style={{
                             height: characterHeight,
                         }}
-                    ></div>
+                    >
+                        <div className="equipment-slot" id="helmet"></div>
+                        <div className="equipment-slot" id="shoulders"></div>
+                        <div className="equipment-slot" id="chest"></div>
+                        <div className="equipment-slot" id="weapon-left"></div>
+                        <div className="equipment-slot" id="weapon-right"></div>
+                        <div className="equipment-slot" id="ring-left"></div>
+                        <div className="equipment-slot" id="ring-right"></div>
+                        <div className="equipment-slot" id="greaves"></div>
+                        <div className="equipment-slot" id="boots"></div>
+                        <div className="equipment-slot" id="gloves"></div>
+                    </div>
                 )}
                 <p>Other here</p>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -7,6 +7,10 @@ const ChatBox = () => {
     const [messages, setMessages] = useState([]);
 
     const [onlineUsers, setOnlineUsers] = useState([]);
+
+    const [showChatBox, setShowChatBox] = useState(true);
+    const [showTimestamps, setShowTimestamps] = useState(true);
+    const messagesContainerRef = useRef(null);
 
     const [ws, setWs] = useState(null);
 
@@ -30,6 +34,22 @@ const ChatBox = () => {
             ws.close(); // Close WebSocket connection when component unmounts
         };
     }, []);
+
+    useEffect(() => {
+        // Scroll to the bottom when messages change
+        const lastMessage = messagesContainerRef.current.lastElementChild;
+        if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, showChatBox]);
+
+    // Scroll to the bottom after the component has rendered
+    useEffect(() => {
+        const lastMessage = messagesContainerRef.current.lastElementChild;
+        if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [showChatBox]);
 
     // Still needs to be tested
     const showOnlineUsers = (usersArray) => {
@@ -57,8 +77,8 @@ const ChatBox = () => {
         //console.log(messageData);
     };
 
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && inputValue.trim() !== '') {
+    const handleSend = (e) => {
+        if (inputValue.trim() !== '') {
             const globalMessage = {
                 sender: userInfo.username,
                 content: inputValue,
@@ -76,12 +96,31 @@ const ChatBox = () => {
         }
     };
 
+    const toggleChatBox = () => {
+        setShowChatBox(!showChatBox);
+    };
+
+    const openChatBox = () => {
+        setShowChatBox(true);
+    };
+
+    const toggleTimestamps = () => {
+        setShowTimestamps(!showTimestamps);
+    };
+
     return (
         <>
             {/* Chat tabs Here maybe */}
 
-            <div className="chat-box-container">
-                <div className="chat-box-message-region">
+            <div
+                className={`chat-box-container ${
+                    showChatBox ? '' : 'hidden-chat-box'
+                }`}
+            >
+                <div
+                    className="chat-box-message-region"
+                    ref={messagesContainerRef}
+                >
                     {messages.map((message, index) => (
                         <p
                             key={index}
@@ -91,21 +130,53 @@ const ChatBox = () => {
                                     index % 2 === 0 ? 'grey' : 'transparent',
                             }}
                         >
-                            ({message.content.timestamp}){' '}
-                            {message.content.sender}: {message.content.content}
+                            {message.content && (
+                                <>
+                                    {showTimestamps &&
+                                        message.content.timestamp && (
+                                            <span>
+                                                ({message.content.timestamp})
+                                            </span>
+                                        )}{' '}
+                                    {message.content.sender && (
+                                        <>
+                                            {message.content.sender}:{' '}
+                                            {message.content.content}
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </p>
                     ))}
                 </div>
+
                 <div className="chat-box-input-region">
                     <b>{userInfo?.username}:</b>
                     <input
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={handleKeyPress}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Button1') {
+                                handleSend();
+                            }
+                        }}
+                        maxLength={100}
                     />
+                    <div onClick={handleSend}>Send</div>
+                    <button onClick={toggleChatBox}>
+                        {showChatBox ? 'Hide Chat Box' : 'Open Chat Box'}
+                    </button>
+                    <button onClick={toggleTimestamps}>
+                        {showTimestamps ? 'Hide Timestamps' : 'Show Timestamps'}
+                    </button>
                 </div>
             </div>
+            {!showChatBox && (
+                <button className="open-chat-box-button" onClick={openChatBox}>
+                    Open Chat Box
+                </button>
+            )}
         </>
     );
 };
