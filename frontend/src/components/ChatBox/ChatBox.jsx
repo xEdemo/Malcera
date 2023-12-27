@@ -18,6 +18,17 @@ const ChatBox = () => {
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
+    const [messageCount, setMessageCount] = useState(0);
+
+    useEffect(() => {                                               // rate limiter logic
+        const messageTimer = setInterval(() => {
+            setMessageCount(0); // Reset message count every minute
+        }, 60000);
+
+        return () => {
+            clearInterval(messageTimer);
+        };
+    }, []);
 
     useEffect(() => {
         // `wss://url:${port}` for production
@@ -71,20 +82,24 @@ const ChatBox = () => {
 
     const handleSend = (e) => {
         if (inputValue.trim() !== '') {
-            const globalMessage = {
-                sender: userInfo.username,
-                content: inputValue,
-                timestamp: new Date().toLocaleTimeString('en-US', {
-                    hour12: false,
-                }), // Change this to server time eventually
-            };
+            // Check message count before sending
+            if (messageCount < 20) {
+                const globalMessage = {
+                    sender: userInfo.username,
+                    content: inputValue,
+                    timestamp: new Date().toLocaleTimeString('en-US', {
+                        hour12: false,
+                    }),
+                };
 
-            ws.send(JSON.stringify({ globalMessage }));
-            // Add the new message to the messages array
-            // userInfo.username may need to get changed based on WebSocket data
+                ws.send(JSON.stringify({ globalMessage }));
+                // Increment message count
+                setMessageCount((prevCount) => prevCount + 1);
 
-            // Clear the input field
-            setInputValue('');
+                setInputValue('');
+            } else {
+                console.log('Message limit exceeded. Wait for a minute.');
+            }
         }
     };
 
