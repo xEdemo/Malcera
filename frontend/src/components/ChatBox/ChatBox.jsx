@@ -154,7 +154,7 @@ const ChatBox = () => {
                                 <>
                                     {showTimestamps &&
                                         message.content.timestamp && (
-                                            <span>
+                                            <span style={{display: 'inline-block', width: '80.25px'}}>
                                                 ({message.content.timestamp})
                                             </span>
                                         )}{' '}
