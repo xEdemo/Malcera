@@ -102,8 +102,21 @@ const ChatBox = () => {
 
     return (
         <>
-            {/* Chat tabs Here maybe */}
-
+            {showChatBox && (
+                <div className="chat-box-tab-container">
+                    <div className="chat-box-tabs">
+                        <p>Placeholder Tab 1</p>
+                        <p>Placeholder Tab 2</p>
+                        <p>Placeholder Tab 3</p>
+                        <p>Placeholder Tab 4</p>
+                        <p>Placeholder Tab 5</p>
+                        <p>Placeholder Tab 6</p>
+                        <p>Placeholder Tab 7</p>
+                        <p>Placeholder Tab 8</p>
+                    </div>
+                    <div onClick={toggleChatBox} className="chat-box-close"></div>
+                </div>
+            )}
             <div
                 className={`chat-box-container ${
                     showChatBox ? '' : 'hidden-chat-box'
@@ -142,25 +155,26 @@ const ChatBox = () => {
                     ))}
                 </div>
 
-                <div className="chat-box-input-region">
+                <div className="chat-box-input-container">
                     <b>{userInfo?.username}:</b>
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === 'Button1') {
-                                handleSend();
-                            }
-                        }}
-                        maxLength={100}
-                    />
-                    <div onClick={handleSend}>Send</div>
-                    <button onClick={toggleChatBox}>
-                        {showChatBox ? 'Hide Chat Box' : 'Open Chat Box'}
-                    </button>
+                    <div className="chat-box-input-region">
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === 'Button1') {
+                                    handleSend();
+                                }
+                            }}
+                            maxLength={100}
+                        />
+                        <div onClick={handleSend}>
+                            <span>&#10148;</span>
+                        </div>
+                    </div>
                     <button onClick={toggleTimestamps}>
-                        {showTimestamps ? 'Hide Timestamps' : 'Show Timestamps'}
+                        {showTimestamps ? 'HideT' : 'ShowT'}
                     </button>
                 </div>
             </div>
