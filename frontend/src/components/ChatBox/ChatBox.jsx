@@ -43,14 +43,6 @@ const ChatBox = () => {
         }
     }, [messages, showChatBox]);
 
-    // Scroll to the bottom after the component has rendered
-    useEffect(() => {
-        const lastMessage = messagesContainerRef.current.lastElementChild;
-        if (lastMessage) {
-            lastMessage.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [showChatBox]);
-
     // Still needs to be tested
     const showOnlineUsers = (usersArray) => {
         // Only show one user per unique user id
