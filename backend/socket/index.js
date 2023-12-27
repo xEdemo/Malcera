@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler');
 const { User } = require('../models');
 
 const initWebSocket = (server) => {
-    const wss = new ws.Server({server});
+    const wss = new ws.Server({ server });
 
     wss.on(
         'connection',
@@ -35,7 +35,6 @@ const initWebSocket = (server) => {
                     }
                 }
             }
-
             //console.log([...wss.clients].map(c => c.users.username));
             [...wss.clients].forEach((client) => {
                 client.send(
@@ -57,7 +56,6 @@ const initWebSocket = (server) => {
             });
         })
     );
-
     const handleIncomingMessage = (message, senderConnection) => {
         if (message && message.globalMessage) {
             const globalMessage = {
@@ -67,10 +65,10 @@ const initWebSocket = (server) => {
 
             // Broadcast the global message to all clients
             [...wss.clients].forEach((client) => {
-                client.send(JSON.stringify({globalMessage}));
+                client.send(JSON.stringify({ globalMessage }));
             });
         }
     };
-}
+};
 
-    module.exports = initWebSocket;
+module.exports = initWebSocket;

@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 const ChatBox = () => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState([]);
+
     const [onlineUsers, setOnlineUsers] = useState([]);
 
     const [showChatBox, setShowChatBox] = useState(true);
@@ -12,14 +13,11 @@ const ChatBox = () => {
     const messagesContainerRef = useRef(null);
 
     const [ws, setWs] = useState(null);
-    const [showChatBox, setShowChatBox] = useState(true); 
-    const [showTimestamps, setShowTimestamps] = useState(true); 
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    
+
     const { userInfo } = useSelector((state) => state.user);
-    const messagesContainerRef = useRef(null);
 
     useEffect(() => {
         // `wss://url:${port}` for production
@@ -47,10 +45,13 @@ const ChatBox = () => {
 
     // Still needs to be tested
     const showOnlineUsers = (usersArray) => {
+        // Only show one user per unique user id
         const users = {};
         usersArray.forEach(({ user }) => {
             users[user._id] = user.username;
+            //console.log(user);
         });
+        console.log(users);
         setOnlineUsers(users);
     };
 
@@ -65,6 +66,7 @@ const ChatBox = () => {
                 messageData.globalMessage,
             ]);
         }
+        //console.log(messageData);
     };
 
     const handleSend = (e) => {
@@ -74,14 +76,14 @@ const ChatBox = () => {
                 content: inputValue,
                 timestamp: new Date().toLocaleTimeString('en-US', {
                     hour12: false,
-                }),
+                }), // Change this to server time eventually
             };
 
-            ws.send(JSON.stringify({ globalMessage: channelMessage }));
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { content: channelMessage },
-            ]);
+            ws.send(JSON.stringify({ globalMessage }));
+            // Add the new message to the messages array
+            // userInfo.username may need to get changed based on WebSocket data
+
+            // Clear the input field
             setInputValue('');
         }
     };
@@ -114,10 +116,10 @@ const ChatBox = () => {
                     {messages.map((message, index) => (
                         <p
                             key={index}
-                            // this can be done with css but this is cooler :]
+                            // this can be done with css as well
                             style={{
                                 backgroundColor:
-                                    index % 2 === 0 ? 'grey' : 'transparent',
+                                    index % 2 === 0 ? '#0a0a0a' : 'transparent',
                             }}
                         >
                             {message.content && (
