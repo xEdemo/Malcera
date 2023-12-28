@@ -131,52 +131,30 @@ const ChatBox = () => {
 
             // Check for minimum height
             const minHeight = 72; // Adjust this value as needed
-            const maxHeight = window.innerHeight * 0.745; // Adjust this value as needed
+            const maxHeight = window.innerHeight * 0.749; // Adjust this value as needed
             const clampedHeight = Math.max(
                 minHeight,
                 Math.min(newHeight, maxHeight)
             );
-            if (newHeight < minHeight) {
-                chatBoxContainerRef.current.style.height = `${minHeight}px`;
-            } else {
-                // Check for maximum height
-                if (newHeight > maxHeight) {
-                    chatBoxContainerRef.current.style.height = `${maxHeight}px`;
-                } else {
-                    chatBoxContainerRef.current.style.height = `${newHeight}px`;
 
-                    // Calculate the new bottom position for chat-box-tab-container
-                    const tabContainerBottom =
-                        newHeight +
-                        chatBoxTabContainerRef.current.clientHeight -
-                        36.38;
-                    chatBoxTabContainerRef.current.style.bottom = `${Math.min(
-                        tabContainerBottom,
-                        maxHeight - minHeight
-                    )}px`;
-                    //console.log('1:', chatBoxTabContainerRef.current.style.bottom);
-                    setChatBoxHeight(clampedHeight);
-                }
-            }
+            // Update the chat box height in the state
+            setChatBoxHeight(clampedHeight);
         }
     };
 
-    useEffect(() => {
-    // Initial position setup
-    const updateTabContainerPosition = () => {
-        if (showChatBox && chatBoxTabContainerRef.current
-    ) {
+    useLayoutEffect(() => {
+        // Initial position setup
+        if (showChatBox && chatBoxTabContainerRef.current) {
             // Set the chat box height
             chatBoxContainerRef.current.style.height = `${chatBoxHeight}px`;
 
             // Use getBoundingClientRect to get the most up-to-date position
-            const tabContainerRect = chatBoxTabContainerRef.current.getBoundingClientRect();
+            const tabContainerRect =
+                chatBoxTabContainerRef.current.getBoundingClientRect();
 
             // Calculate the bottom position for chat-box-tab-container
             const tabContainerBottom =
-                chatBoxHeight +
-                tabContainerRect.height -
-                36.38;
+                chatBoxHeight + tabContainerRect.height - 36.38;
 
             // Ensure the tab container stays within the limits
             const maxTabContainerBottom =
@@ -186,20 +164,7 @@ const ChatBox = () => {
                 maxTabContainerBottom
             )}px`;
         }
-    };
-
-    // Set initial position
-    updateTabContainerPosition();
-
-    // Use requestAnimationFrame to ensure that the layout has been updated
-    requestAnimationFrame(updateTabContainerPosition);
-
-    // Cleanup function
-    return () => {
-        // Ensure cleanup happens after the effect has been committed
-        requestAnimationFrame(updateTabContainerPosition);
-    };
-}, [showChatBox, chatBoxHeight]);
+    }, [showChatBox, chatBoxHeight]);
 
     useEffect(() => {
         window.addEventListener('mousemove', handleDuringResize);
@@ -249,6 +214,7 @@ const ChatBox = () => {
                     ></div>
                 </div>
             )}
+            
             <div
                 className={`chat-box-container ${
                     showChatBox ? '' : 'hidden-chat-box'
@@ -320,6 +286,7 @@ const ChatBox = () => {
                     </button>
                 </div>
             </div>
+
             {!showChatBox && (
                 <button
                     className="open-chat-box-button"
