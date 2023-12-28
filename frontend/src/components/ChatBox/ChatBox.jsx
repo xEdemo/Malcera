@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import Filter from 'bad-words';
-
-
+// import Typo from 'typo-js';
 
 const ChatBox = pattern => {
     const [inputValue, setInputValue] = useState('');
@@ -35,6 +34,41 @@ const ChatBox = pattern => {
 
     const { userInfo } = useSelector((state) => state.user);
     const filter = new Filter();
+
+    // let dictionary;
+    //
+    // // Function to load the dictionary
+    // useEffect(() => {
+    //     // Load the dictionary when the component mounts
+    //     const loadDictionary = async () => {
+    //         dictionary = await new Typo('en_US');
+    //     };
+    //
+    //     loadDictionary();
+    //
+    //     // ... (rest of your existing useEffect logic)
+    // }, []);
+    //
+    // // Function to check if the dictionary is loaded
+    // const isDictionaryLoaded = () => {
+    //     return !!dictionary;
+    // };
+    //
+    // // Function to check if a word is misspelled
+    // const isMisspelled = (word) => {
+    //     return isDictionaryLoaded() ? !dictionary.check(word) : false;
+    // };
+    //
+    // useEffect(() => {
+    //     // Clear the message timer when the component unmounts
+    //     return () => {
+    //         if (messageTimer) {
+    //             clearInterval(messageTimer);
+    //         }
+    //     };
+    // }, [messageTimer]);
+
+
 
 
     useEffect(() => {
@@ -164,6 +198,25 @@ const ChatBox = pattern => {
             }
         }
     };
+
+
+    // const identifyMisspelledWords = (text) => {
+    //     // Check if the dictionary is loaded
+    //     if (!dictionary) {
+    //         // You can handle the case where the dictionary is not yet loaded
+    //         console.error('Dictionary not loaded');
+    //         return text;
+    //     }
+    //
+    //     const words = text.split(/\s+/);
+    //     const correctedText = words.map((word) => {
+    //         const isMisspelled = !dictionary.check(word);
+    //         return isMisspelled ? `<u>${word}</u>` : word;
+    //     });
+    //     return correctedText.join(' ');
+    // };
+
+
 
 
 
