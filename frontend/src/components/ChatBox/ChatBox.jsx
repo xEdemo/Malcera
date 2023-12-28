@@ -16,6 +16,7 @@ const ChatBox = () => {
     const [ws, setWs] = useState(null);
 
     const [messageCount, setMessageCount] = useState(0);
+    const [messageTimer, setMessageTimer] = useState(null);
 
     const [resizeState, setResizeState] = useState({
         resizing: false,
@@ -24,7 +25,6 @@ const ChatBox = () => {
     });
     const chatBoxContainerRef = useRef(null);
     const chatBoxTabContainerRef = useRef(null);
-    const tabContainerBottomRef = useRef(null);
     const [chatBoxHeight, setChatBoxHeight] = useState();
 
     const navigate = useNavigate();
@@ -33,15 +33,13 @@ const ChatBox = () => {
     const { userInfo } = useSelector((state) => state.user);
 
     useEffect(() => {
-        // rate limiter logic
-        const messageTimer = setInterval(() => {
-            setMessageCount(0); // Reset message count every minute
-        }, 60000);
-
+        // Clear the message timer when the component unmounts
         return () => {
-            clearInterval(messageTimer);
+            if (messageTimer) {
+                clearInterval(messageTimer);
+            }
         };
-    }, []);
+    }, [messageTimer]);
 
     useEffect(() => {
         // `wss://url:${port}` for production
@@ -93,8 +91,16 @@ const ChatBox = () => {
         //console.log(messageData);
     };
 
-    const handleSend = (e) => {
+    const handleSend = () => {
         if (inputValue.trim() !== '') {
+            if (messageCount === 0) {
+                // Start the message timer
+                const timer = setInterval(() => {
+                    setMessageCount(0);
+                    clearInterval(timer); // Reset and clear the timer after a minute
+                }, 60000);
+                setMessageTimer(timer);
+            }
             // Check message count before sending
             if (messageCount < 20) {
                 const globalMessage = {
@@ -214,7 +220,7 @@ const ChatBox = () => {
                     ></div>
                 </div>
             )}
-            
+
             <div
                 className={`chat-box-container ${
                     showChatBox ? '' : 'hidden-chat-box'
