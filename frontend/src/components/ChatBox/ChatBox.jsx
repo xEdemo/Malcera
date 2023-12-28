@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 
 const ChatBox = () => {
     const [inputValue, setInputValue] = useState('');
@@ -14,13 +15,25 @@ const ChatBox = () => {
 
     const [ws, setWs] = useState(null);
 
+    const [messageCount, setMessageCount] = useState(0);
+
+    const [resizeState, setResizeState] = useState({
+        resizing: false,
+        startHeight: 0,
+        startMouseY: 0,
+    });
+    const chatBoxContainerRef = useRef(null);
+    const chatBoxTabContainerRef = useRef(null);
+    const tabContainerBottomRef = useRef(null);
+    const [chatBoxHeight, setChatBoxHeight] = useState();
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
-    const [messageCount, setMessageCount] = useState(0);
 
-    useEffect(() => {                                               // rate limiter logic
+    useEffect(() => {
+        // rate limiter logic
         const messageTimer = setInterval(() => {
             setMessageCount(0); // Reset message count every minute
         }, 60000);
@@ -52,7 +65,7 @@ const ChatBox = () => {
         if (lastMessage) {
             lastMessage.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages, showChatBox]);
+    }, [messages, showChatBox, resizeState]);
 
     // Still needs to be tested
     const showOnlineUsers = (usersArray) => {
@@ -98,17 +111,114 @@ const ChatBox = () => {
 
                 setInputValue('');
             } else {
-                console.log('Message limit exceeded. Wait for a minute.');
+                toast.error('Message limit exceeded. Wait for a minute.');
             }
         }
     };
 
-    const toggleChatBox = () => {
-        setShowChatBox(!showChatBox);
+    const handleResizeStart = (e) => {
+        setResizeState({
+            resizing: true,
+            startHeight: chatBoxContainerRef.current.clientHeight,
+            startMouseY: e.clientY,
+        });
     };
 
-    const openChatBox = () => {
-        setShowChatBox(true);
+    const handleDuringResize = (e) => {
+        if (resizeState.resizing) {
+            const newHeight =
+                resizeState.startHeight + (resizeState.startMouseY - e.clientY);
+
+            // Check for minimum height
+            const minHeight = 72; // Adjust this value as needed
+            const maxHeight = window.innerHeight * 0.745; // Adjust this value as needed
+            const clampedHeight = Math.max(
+                minHeight,
+                Math.min(newHeight, maxHeight)
+            );
+            if (newHeight < minHeight) {
+                chatBoxContainerRef.current.style.height = `${minHeight}px`;
+            } else {
+                // Check for maximum height
+                if (newHeight > maxHeight) {
+                    chatBoxContainerRef.current.style.height = `${maxHeight}px`;
+                } else {
+                    chatBoxContainerRef.current.style.height = `${newHeight}px`;
+
+                    // Calculate the new bottom position for chat-box-tab-container
+                    const tabContainerBottom =
+                        newHeight +
+                        chatBoxTabContainerRef.current.clientHeight -
+                        36.38;
+                    chatBoxTabContainerRef.current.style.bottom = `${Math.min(
+                        tabContainerBottom,
+                        maxHeight - minHeight
+                    )}px`;
+                    //console.log('1:', chatBoxTabContainerRef.current.style.bottom);
+                    setChatBoxHeight(clampedHeight);
+                }
+            }
+        }
+    };
+
+    useEffect(() => {
+    // Initial position setup
+    const updateTabContainerPosition = () => {
+        if (showChatBox) {
+            // Set the chat box height
+            chatBoxContainerRef.current.style.height = `${chatBoxHeight}px`;
+
+            // Use getBoundingClientRect to get the most up-to-date position
+            const tabContainerRect = chatBoxTabContainerRef.current.getBoundingClientRect();
+
+            // Calculate the bottom position for chat-box-tab-container
+            const tabContainerBottom =
+                chatBoxHeight +
+                tabContainerRect.height -
+                36.38;
+
+            // Ensure the tab container stays within the limits
+            const maxTabContainerBottom =
+                window.innerHeight - tabContainerRect.height;
+            chatBoxTabContainerRef.current.style.bottom = `${Math.min(
+                tabContainerBottom,
+                maxTabContainerBottom
+            )}px`;
+        }
+    };
+
+    // Set initial position
+    updateTabContainerPosition();
+
+    // Use requestAnimationFrame to ensure that the layout has been updated
+    requestAnimationFrame(updateTabContainerPosition);
+
+    // Cleanup function
+    return () => {
+        // Ensure cleanup happens after the effect has been committed
+        requestAnimationFrame(updateTabContainerPosition);
+    };
+}, [showChatBox, chatBoxHeight]);
+
+    useEffect(() => {
+        window.addEventListener('mousemove', handleDuringResize);
+        window.addEventListener('mouseup', handleResizeEnd);
+
+        return () => {
+            window.removeEventListener('mousemove', handleDuringResize);
+            window.removeEventListener('mouseup', handleResizeEnd);
+        };
+    }, [resizeState]);
+
+    const handleResizeEnd = () => {
+        setResizeState((prevState) => ({
+            ...prevState,
+            resizing: false,
+        }));
+    };
+
+    const toggleChatBox = () => {
+        setShowChatBox(!showChatBox);
     };
 
     const toggleTimestamps = () => {
@@ -118,10 +228,13 @@ const ChatBox = () => {
     return (
         <>
             {showChatBox && (
-                <div className="chat-box-tab-container">
+                <div
+                    className="chat-box-tab-container"
+                    ref={chatBoxTabContainerRef}
+                >
                     <div className="chat-box-tabs">
-                        <p>Placeholder Tab 1</p>
-                        <p>Placeholder Tab 2</p>
+                        <p>Global</p>
+                        <p>English</p>
                         <p>Placeholder Tab 3</p>
                         <p>Placeholder Tab 4</p>
                         <p>Placeholder Tab 5</p>
@@ -129,14 +242,22 @@ const ChatBox = () => {
                         <p>Placeholder Tab 7</p>
                         <p>Placeholder Tab 8</p>
                     </div>
-                    <div onClick={toggleChatBox} className="chat-box-close"></div>
+                    <div
+                        onClick={toggleChatBox}
+                        className="chat-box-close"
+                    ></div>
                 </div>
             )}
             <div
                 className={`chat-box-container ${
                     showChatBox ? '' : 'hidden-chat-box'
                 }`}
+                ref={chatBoxContainerRef}
             >
+                <div
+                    className="chat-box-resize-handle"
+                    onMouseDown={handleResizeStart}
+                ></div>
                 <div
                     className="chat-box-message-region"
                     ref={messagesContainerRef}
@@ -154,7 +275,12 @@ const ChatBox = () => {
                                 <>
                                     {showTimestamps &&
                                         message.content.timestamp && (
-                                            <span style={{display: 'inline-block', width: '80.25px'}}>
+                                            <span
+                                                style={{
+                                                    display: 'inline-block',
+                                                    width: '80.25px',
+                                                }}
+                                            >
                                                 ({message.content.timestamp})
                                             </span>
                                         )}{' '}
@@ -194,7 +320,10 @@ const ChatBox = () => {
                 </div>
             </div>
             {!showChatBox && (
-                <button className="open-chat-box-button" onClick={openChatBox}>
+                <button
+                    className="open-chat-box-button"
+                    onClick={toggleChatBox}
+                >
                     Open Chat Box
                 </button>
             )}

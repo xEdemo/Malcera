@@ -23,7 +23,7 @@ function App() {
         <>
             <Suspense fallback={<Loading />}>
                 <ToastContainer
-                    position="top-center"
+                    position="bottom-left"
                     autoClose={2500}
                     limit={5}
                     hideProgressBar
