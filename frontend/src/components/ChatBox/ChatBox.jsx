@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import Filter from 'bad-words';
+// import Typo from 'typo-js';
 
-const ChatBox = () => {
+const ChatBox = pattern => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState([]);
 
@@ -31,6 +33,43 @@ const ChatBox = () => {
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
+    const filter = new Filter();
+
+    // let dictionary;
+    //
+    // // Function to load the dictionary
+    // useEffect(() => {
+    //     // Load the dictionary when the component mounts
+    //     const loadDictionary = async () => {
+    //         dictionary = await new Typo('en_US');
+    //     };
+    //
+    //     loadDictionary();
+    //
+    //     // ... (rest of your existing useEffect logic)
+    // }, []);
+    //
+    // // Function to check if the dictionary is loaded
+    // const isDictionaryLoaded = () => {
+    //     return !!dictionary;
+    // };
+    //
+    // // Function to check if a word is misspelled
+    // const isMisspelled = (word) => {
+    //     return isDictionaryLoaded() ? !dictionary.check(word) : false;
+    // };
+    //
+    // useEffect(() => {
+    //     // Clear the message timer when the component unmounts
+    //     return () => {
+    //         if (messageTimer) {
+    //             clearInterval(messageTimer);
+    //         }
+    //     };
+    // }, [messageTimer]);
+
+
+
 
     useEffect(() => {
         // Clear the message timer when the component unmounts
@@ -125,37 +164,71 @@ const ChatBox = () => {
         };
     };
 
-
     const handleSend = () => {
         if (inputValue.trim() !== '') {
-            if (messageCount === 0) {
-                // Start the message timer
-                const timer = setInterval(() => {
-                    setMessageCount(0);
-                    clearInterval(timer); // Reset and clear the timer after a minute
-                }, 60000);
-                setMessageTimer(timer);
-            }
-            // Check message count before sending
-            if (messageCount < 20) {
-                const globalMessage = {
-                    sender: userInfo.username,
-                    content: inputValue,
-                    timestamp: new Date().toLocaleTimeString('en-US', {
-                        hour12: false,
-                    }),
-                };
+            // Check for profanity
+            const filteredContent = filter.clean(inputValue);
 
-                ws.send(JSON.stringify({ globalMessage }));
-                // Increment message count
-                setMessageCount((prevCount) => prevCount + 1);
-
-                setInputValue('');
+            // Check if the content was changed
+            if (filteredContent !== inputValue) {
+                // Handle profanity violation (e.g., warn the user, prevent sending)
+                toast.error('Profanity detected. Message not sent.');
             } else {
-                toast.error('Message limit exceeded. Wait for a minute.');
+                // Continue with sending the message
+
+                if (messageCount === 0) {
+                    // Start the message timer
+                    const timer = setInterval(() => {
+                        setMessageCount(0);
+                        clearInterval(timer); // Reset and clear the timer after a minute
+                    }, 60000);
+                    setMessageTimer(timer);
+                }
+
+                // Check message count before sending
+                if (messageCount < 20) {
+                    const globalMessage = {
+                        sender: userInfo.username,
+                        content: inputValue,
+                        timestamp: new Date().toLocaleTimeString('en-US', {
+                            hour12: false,
+                        }),
+                    };
+
+                    ws.send(JSON.stringify({ globalMessage }));
+                    // Increment message count
+                    setMessageCount((prevCount) => prevCount + 1);
+
+                    setInputValue('');
+                } else {
+                    toast.error('Message limit exceeded. Wait for a minute.');
+                }
             }
         }
     };
+
+
+    // const identifyMisspelledWords = (text) => {
+    //     // Check if the dictionary is loaded
+    //     if (!dictionary) {
+    //         // You can handle the case where the dictionary is not yet loaded
+    //         console.error('Dictionary not loaded');
+    //         return text;
+    //     }
+    //
+    //     const words = text.split(/\s+/);
+    //     const correctedText = words.map((word) => {
+    //         const isMisspelled = !dictionary.check(word);
+    //         return isMisspelled ? `<u>${word}</u>` : word;
+    //     });
+    //     return correctedText.join(' ');
+    // };
+
+
+
+
+
+
 
     const handleResizeStart = (e) => {
         setResizeState({
