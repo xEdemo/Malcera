@@ -81,17 +81,44 @@ const ChatBox = () => {
 
     const handleMessage = (e) => {
         const messageData = JSON.parse(e.data);
+
         if ('online' in messageData) {
             showOnlineUsers(messageData.online);
         }
+
         if ('globalMessage' in messageData) {
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                messageData.globalMessage,
-            ]);
+            const parsedMessage = parseMessage(messageData.globalMessage);
+            setMessages((prevMessages) => [...prevMessages, parsedMessage]);
         }
-        //console.log(messageData);
     };
+
+    const parseMessage = (message) => {
+        const messageContent = message.content.content;
+        const containsLink = /www\.|\.com$|\.org$|\.gov$|\.io$/i.test(messageContent);
+
+        if (containsLink) {
+            const linkedContent = (
+                <a
+                    href={`http://${messageContent}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {messageContent}
+                </a>
+            );
+
+            return {
+                ...message,
+                content: {
+                    ...message.content,
+                    content: linkedContent,
+                },
+            };
+        }
+
+        return message;
+    };
+
 
     const handleSend = (e) => {
         if (inputValue.trim() !== '') {
