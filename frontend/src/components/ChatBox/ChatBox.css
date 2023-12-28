@@ -23,6 +23,7 @@
     font-size: 1.3rem;
     padding-left: 8px;
     padding-right: 8px;
+    user-select: none;
     border-right: 1px black solid;
 }
 

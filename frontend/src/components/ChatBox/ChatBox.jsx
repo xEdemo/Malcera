@@ -164,7 +164,8 @@ const ChatBox = () => {
     useEffect(() => {
     // Initial position setup
     const updateTabContainerPosition = () => {
-        if (showChatBox) {
+        if (showChatBox && chatBoxTabContainerRef.current
+    ) {
             // Set the chat box height
             chatBoxContainerRef.current.style.height = `${chatBoxHeight}px`;
 
