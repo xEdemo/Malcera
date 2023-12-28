@@ -9,6 +9,7 @@
 }
 
 .chat-box-tabs {
+    height: 100%;
     display: flex;
     align-items: center;
     overflow-x: auto;
@@ -107,6 +108,24 @@
     overflow-x: hidden;
 }
 
+.chat-box-message-region::-webkit-scrollbar {
+    width: 6px; /* Adjust the width as needed */
+}
+
+.chat-box-message-region p,
+.chat-box-message-region span,
+.chat-box-message-region p a {
+    font-size: 1.2rem;
+}
+
+.chat-box-message-region p a {
+    color: var(--theme-blue-400);
+}
+
+.chat-box-message-region p a:hover {
+    color: var(--theme-blue-300);
+}
+
 .chat-box-input-container {
     display: flex;
     align-items: center;
@@ -129,8 +148,8 @@
 }
 
 .chat-box-input-region div {
+    width: 30px;
     cursor: pointer;
-    margin-left: 4px;
     padding: 1.5px;
     background-color: green;
     color: #fff;

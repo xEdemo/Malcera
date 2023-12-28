@@ -92,29 +92,37 @@ const ChatBox = () => {
 
     const parseMessage = (message) => {
         const messageContent = message.content.content;
-        const containsLink = /www\.|\.com$|\.org$|\.gov$|\.io$/i.test(messageContent);
+        const linkRegex =
+            /(?:https?:\/\/)?(?:www\.)?(\S+\.[a-zA-Z]{2,}(?:[^\s.,;!?()]|$))/gi;
+        const linkedContent = messageContent
+            .split(linkRegex)
+            .map((part, index, array) => {
+                if (index % 2 === 1) {
+                    // Apply link to the matched part
+                    console.log(part);
+                    return (
+                        <a
+                            key={index}
+                            href={`https://www.${part}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {part}
+                        </a>
+                    );
+                } else {
+                    // Display the text before the link
+                    return part;
+                }
+            });
 
-        if (containsLink) {
-            const linkedContent = (
-                <a
-                    href={`http://${messageContent}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    {messageContent}
-                </a>
-            );
-
-            return {
-                ...message,
-                content: {
-                    ...message.content,
-                    content: linkedContent,
-                },
-            };
-        }
-
-        return message;
+        return {
+            ...message,
+            content: {
+                ...message.content,
+                content: linkedContent,
+            },
+        };
     };
 
 
@@ -234,12 +242,12 @@ const ChatBox = () => {
                     <div className="chat-box-tabs">
                         <p>Global</p>
                         <p>English</p>
-                        <p>Placeholder Tab 3</p>
-                        <p>Placeholder Tab 4</p>
-                        <p>Placeholder Tab 5</p>
-                        <p>Placeholder Tab 6</p>
-                        <p>Placeholder Tab 7</p>
-                        <p>Placeholder Tab 8</p>
+                        <p>Private</p>
+                        <p>Events</p>
+                        <p>Yo</p>
+                        <p>Yo</p>
+                        <p>Yo</p>
+                        <p>Yo</p>
                     </div>
                     <div
                         onClick={toggleChatBox}
@@ -278,7 +286,7 @@ const ChatBox = () => {
                                             <span
                                                 style={{
                                                     display: 'inline-block',
-                                                    width: '80.25px',
+                                                    width: '63.25px',
                                                 }}
                                             >
                                                 ({message.content.timestamp})
