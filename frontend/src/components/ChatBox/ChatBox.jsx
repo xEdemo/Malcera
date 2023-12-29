@@ -3,9 +3,35 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import Filter from 'bad-words';
-// import Typo from 'typo-js';
+import Typo from 'typo-js';
 
-const ChatBox = pattern => {
+const filter = new Filter();
+
+let dictionary = new Typo('en_US', null, null, {
+    dictionaryPath:
+        '../../../node_modules/typo-js/dictionaries/en_US',
+});
+
+const loadDictionary = async () => {
+    const affPath =
+        '../../../node_modules/typo-js/dictionaries/en_US/en_US.dic\n';
+    const dicPath =
+        '../../../node_modules/typo-js/dictionaries/en_US/en_US.dic\n';
+
+    // Load the dictionary files
+    const [affData, dicData] = await Promise.all([
+        fetch(affPath).then((response) => response.text()),
+        fetch(dicPath).then((response) => response.text()),
+    ]);
+
+    // Create Typo instance
+    dictionary = new Typo('en_US', affData, dicData);
+
+    // Now you can use the 'dictionary' instance
+    console.log(dictionary.check('example')); // Example usage
+};
+
+const ChatBox = () => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState([]);
 
@@ -33,76 +59,14 @@ const ChatBox = pattern => {
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
-    const filter = new Filter();
 
-    // let dictionary;
-    //
-    // // Function to load the dictionary
-    // useEffect(() => {
-    //     // Load the dictionary when the component mounts
-    //     const loadDictionary = async () => {
-    //         dictionary = await new Typo('en_US');
-    //     };
-    //
-    //     loadDictionary();
-    //
-    //     // ... (rest of your existing useEffect logic)
-    // }, []);
-    //
-    // // Function to check if the dictionary is loaded
-    // const isDictionaryLoaded = () => {
-    //     return !!dictionary;
-    // };
-    //
-    // // Function to check if a word is misspelled
-    // const isMisspelled = (word) => {
-    //     return isDictionaryLoaded() ? !dictionary.check(word) : false;
-    // };
-    //
-    // useEffect(() => {
-    //     // Clear the message timer when the component unmounts
-    //     return () => {
-    //         if (messageTimer) {
-    //             clearInterval(messageTimer);
-    //         }
-    //     };
-    // }, [messageTimer]);
+    const toggleChatBox = () => {
+        setShowChatBox(!showChatBox);
+    };
 
-
-
-
-    useEffect(() => {
-        // Clear the message timer when the component unmounts
-        return () => {
-            if (messageTimer) {
-                clearInterval(messageTimer);
-            }
-        };
-    }, [messageTimer]);
-
-    useEffect(() => {
-        // `wss://url:${port}` for production
-        const ws = new WebSocket(`ws://localhost:5000`);
-        setWs(ws);
-
-        ws.addEventListener('open', () => {
-            console.log('WebSocket connection opened');
-        });
-
-        ws.addEventListener('message', handleMessage);
-
-        return () => {
-            ws.close(); // Close WebSocket connection when component unmounts
-        };
-    }, []);
-
-    useEffect(() => {
-        // Scroll to the bottom when messages change
-        const lastMessage = messagesContainerRef.current.lastElementChild;
-        if (lastMessage) {
-            lastMessage.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [messages, showChatBox, resizeState]);
+    const toggleTimestamps = () => {
+        setShowTimestamps(!showTimestamps);
+    };
 
     // Still needs to be tested
     const showOnlineUsers = (usersArray) => {
@@ -175,7 +139,6 @@ const ChatBox = pattern => {
                 toast.error('Profanity detected. Message not sent.');
             } else {
                 // Continue with sending the message
-
                 if (messageCount === 0) {
                     // Start the message timer
                     const timer = setInterval(() => {
@@ -206,29 +169,6 @@ const ChatBox = pattern => {
             }
         }
     };
-
-
-    // const identifyMisspelledWords = (text) => {
-    //     // Check if the dictionary is loaded
-    //     if (!dictionary) {
-    //         // You can handle the case where the dictionary is not yet loaded
-    //         console.error('Dictionary not loaded');
-    //         return text;
-    //     }
-    //
-    //     const words = text.split(/\s+/);
-    //     const correctedText = words.map((word) => {
-    //         const isMisspelled = !dictionary.check(word);
-    //         return isMisspelled ? `<u>${word}</u>` : word;
-    //     });
-    //     return correctedText.join(' ');
-    // };
-
-
-
-
-
-
 
     const handleResizeStart = (e) => {
         setResizeState({
@@ -297,13 +237,42 @@ const ChatBox = pattern => {
         }));
     };
 
-    const toggleChatBox = () => {
-        setShowChatBox(!showChatBox);
-    };
+    useEffect(() => {
+        // Clear the message timer when the component unmounts
+        return () => {
+            if (messageTimer) {
+                clearInterval(messageTimer);
+            }
+        };
+    }, [messageTimer]);
 
-    const toggleTimestamps = () => {
-        setShowTimestamps(!showTimestamps);
-    };
+    useEffect(() => {
+        // `wss://url:${port}` for production
+        const ws = new WebSocket(`ws://localhost:5000`);
+        setWs(ws);
+
+        ws.addEventListener('open', () => {
+            console.log('WebSocket connection opened');
+        });
+
+        ws.addEventListener('message', handleMessage);
+
+        return () => {
+            ws.close(); // Close WebSocket connection when component unmounts
+        };
+    }, []);
+
+    useEffect(() => {
+        // Scroll to the bottom when messages change
+        const lastMessage = messagesContainerRef.current.lastElementChild;
+        if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, showChatBox, resizeState]);
+
+    useEffect(() => {
+        loadDictionary();
+    }, []);
 
     return (
         <>
@@ -383,7 +352,22 @@ const ChatBox = pattern => {
                         <input
                             type="text"
                             value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
+                            onChange={(e) => {
+                                const newText = e.target.value;
+                                const misspelledWords = newText
+                                    .split(/\s+/)
+                                    .filter((word) => !dictionary.check(word));
+
+                                if (misspelledWords.length > 0) {
+                                    // Display error message or take appropriate action
+                                    console.log(
+                                        'Misspelled Words:',
+                                        misspelledWords
+                                    );
+                                }
+
+                                setInputValue(newText);
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === 'Button1') {
                                     handleSend();
