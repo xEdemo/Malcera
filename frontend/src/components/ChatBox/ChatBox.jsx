@@ -159,12 +159,15 @@ const ChatBox = () => {
 
                 // Check message count before sending
                 if (messageCount < 20) {
+                    const now = new Date();
+
+                    // Get UTC time string in HH:mm:ss format
+                    const utcTimeString = now.toISOString().split('T')[1].slice(0, 8);
+
                     const globalMessage = {
                         sender: userInfo.username,
                         content: inputValue,
-                        timestamp: new Date().toLocaleTimeString('en-US', {
-                            hour12: false,
-                        }),
+                        timestamp: utcTimeString,
                     };
 
                     ws.send(JSON.stringify({ globalMessage }));
