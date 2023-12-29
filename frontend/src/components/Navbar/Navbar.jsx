@@ -36,6 +36,9 @@ const Navbar = () => {
             dispatch(clearCredentials());
             navigate('/');
             toast.success('You have successfully logged out.');
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
         } catch (err) {
             toast.error(err?.data?.message || err.error);
         }

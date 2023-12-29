@@ -30,6 +30,9 @@ const LoginForm = () => {
             dispatch(setCredentials({ ...res }));
             navigate('/');
             toast.success('Login successful!');
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
         } catch (err) {
             toast.error(err?.data?.message || err.error);
         }

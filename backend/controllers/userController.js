@@ -222,6 +222,7 @@ const authUser = asyncHandler(async (req, res) => {
             armourRating: user.armourRating,
             jossPaper: user.jossPaper,
             actionStatus: user.actionStatus,
+            role: user.role,
             inventory,
         });
     } else {

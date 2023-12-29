@@ -2,15 +2,12 @@ import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import { Cog6ToothIcon as OutlineCog6ToothIcon } from '@heroicons/react/24/outline';
 import Filter from 'bad-words';
 import Typo from 'typo-js';
 
 const filter = new Filter();
-
-let dictionary = new Typo('en_US', null, null, {
-    dictionaryPath:
-        '../../../node_modules/typo-js/dictionaries/en_US',
-});
+let dictionary = new Typo();
 
 const loadDictionary = async () => {
     const affPath =
@@ -38,7 +35,12 @@ const ChatBox = () => {
     const [onlineUsers, setOnlineUsers] = useState([]);
 
     const [showChatBox, setShowChatBox] = useState(true);
-    const [showTimestamps, setShowTimestamps] = useState(true);
+    const [showTimestamps, setShowTimestamps] = useState(
+        JSON.parse(localStorage.getItem('SHOW_TIMESTAMPS')) || false
+    );
+
+    const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+
     const messagesContainerRef = useRef(null);
 
     const [ws, setWs] = useState(null);
@@ -54,18 +56,60 @@ const ChatBox = () => {
     const chatBoxContainerRef = useRef(null);
     const chatBoxTabContainerRef = useRef(null);
     const [chatBoxHeight, setChatBoxHeight] = useState();
+    const [overlayHeight, setOverlayHeight] = useState();
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.user);
 
+    const toggleOptionsMenu = () => {
+        setShowOptionsMenu(!showOptionsMenu);
+    };
+
     const toggleChatBox = () => {
         setShowChatBox(!showChatBox);
     };
 
     const toggleTimestamps = () => {
-        setShowTimestamps(!showTimestamps);
+        const newValue = !showTimestamps;
+        setShowTimestamps(newValue);
+        // Save the choice in local storage
+        localStorage.setItem('SHOW_TIMESTAMPS', JSON.stringify(newValue));
+    };
+
+    const parseMessage = (message) => {
+        const messageContent = message.content.content;
+        const linkRegex =
+            /(?:https?:\/\/)?(?:www\.)?(\S+\.[a-zA-Z]{2,}(?:[^\s.,;!?()]|$))/gi;
+        const linkedContent = messageContent
+            .split(linkRegex)
+            .map((part, index, array) => {
+                if (index % 2 === 1) {
+                    // Apply link to the matched part
+                    return (
+                        <a
+                            key={index}
+                            href={`https://www.${part}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {part}
+                        </a>
+                    );
+                } else {
+                    // Display the text before the link
+                    return part;
+                }
+            });
+
+        return {
+            ...message,
+            content: {
+                ...message.content,
+                content: linkedContent,
+            },
+        };
     };
 
     // Still needs to be tested
@@ -91,41 +135,6 @@ const ChatBox = () => {
             const parsedMessage = parseMessage(messageData.globalMessage);
             setMessages((prevMessages) => [...prevMessages, parsedMessage]);
         }
-    };
-
-    const parseMessage = (message) => {
-        const messageContent = message.content.content;
-        const linkRegex =
-            /(?:https?:\/\/)?(?:www\.)?(\S+\.[a-zA-Z]{2,}(?:[^\s.,;!?()]|$))/gi;
-        const linkedContent = messageContent
-            .split(linkRegex)
-            .map((part, index, array) => {
-                if (index % 2 === 1) {
-                    // Apply link to the matched part
-                    console.log(part);
-                    return (
-                        <a
-                            key={index}
-                            href={`https://www.${part}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            {part}
-                        </a>
-                    );
-                } else {
-                    // Display the text before the link
-                    return part;
-                }
-            });
-
-        return {
-            ...message,
-            content: {
-                ...message.content,
-                content: linkedContent,
-            },
-        };
     };
 
     const handleSend = () => {
@@ -217,6 +226,10 @@ const ChatBox = () => {
                 tabContainerBottom,
                 maxTabContainerBottom
             )}px`;
+
+            const overlayHeight = chatBoxHeight + 36.38;
+
+            setOverlayHeight(overlayHeight);
         }
     }, [showChatBox, chatBoxHeight]);
 
@@ -276,6 +289,87 @@ const ChatBox = () => {
 
     return (
         <>
+            {showOptionsMenu && (
+                <div
+                    className="chat-box-overlay"
+                    style={{ height: `${overlayHeight}px` }}
+                >
+                    <div className="chat-box-options-toolbar">
+                        <p>Chat Box Options:</p>
+                        <div
+                            onClick={toggleOptionsMenu}
+                            className="chat-box-close-overlay"
+                        ></div>
+                    </div>
+                    <div
+                        className="chat-box-resize-handle"
+                        onMouseDown={handleResizeStart}
+                    ></div>
+                    <div className="chat-box-options-container">
+                        <div>
+                            <p>Timestamps:</p>
+                            <div>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="timestamps"
+                                        checked={showTimestamps}
+                                        onChange={toggleTimestamps}
+                                    />{' '}
+                                    Show
+                                </label>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="timestamps"
+                                        checked={!showTimestamps}
+                                        onChange={toggleTimestamps}
+                                    />{' '}
+                                    Hide
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <p>Name Plate Color:</p>
+                            <div>
+                                <select>
+                                    <option>Blue</option>
+                                    <option>Green</option>
+                                    <option>Purple</option>
+                                    <option>Red</option>
+                                    {userInfo?.role !== 'user' && (
+                                        <>
+                                            <option>Gradient</option>
+                                            <option>Transparent</option>
+                                        </>
+                                    )}
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <p>Mute Alerts:</p>
+                            <div>Options</div>
+                        </div>
+                        <div>
+                            <p>New Option Here:</p>
+                            <div>Options</div>
+                        </div>
+                        <div>
+                            <p>New Option Here:</p>
+                            <div>Options</div>
+                        </div>
+                        <div>
+                            <p>New Option Here:</p>
+                            <div>Options</div>
+                        </div>
+                        <div>
+                            <p>New Option Here:</p>
+                            <div>Options</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showChatBox && (
                 <div
                     className="chat-box-tab-container"
@@ -286,10 +380,19 @@ const ChatBox = () => {
                         <p>English</p>
                         <p>Private</p>
                         <p>Events</p>
-                        <p>Yo</p>
-                        <p>Yo</p>
-                        <p>Yo</p>
-                        <p>Yo</p>
+                        <p>Area</p>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p>
+                        <p>Placeholder</p>
+                    </div>
+                    <div
+                        onClick={toggleOptionsMenu}
+                        className="chat-box-options-cog"
+                    >
+                        <OutlineCog6ToothIcon />
                     </div>
                     <div
                         onClick={toggleChatBox}
@@ -379,9 +482,6 @@ const ChatBox = () => {
                             <span>&#10148;</span>
                         </div>
                     </div>
-                    <button onClick={toggleTimestamps}>
-                        {showTimestamps ? 'HideT' : 'ShowT'}
-                    </button>
                 </div>
             </div>
 
