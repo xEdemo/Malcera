@@ -158,6 +158,9 @@
     padding: 0px;
     display: flex;
     flex-direction: column;
+    box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.4);
+
+
 }
 
 .chat-box-container:hover {
