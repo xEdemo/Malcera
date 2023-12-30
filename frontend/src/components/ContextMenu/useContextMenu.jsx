@@ -1,20 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const useContextMenu = () => {
+    const isLeftSidebarOpenString = localStorage.getItem(
+        'IS_LEFT_SIDEBAR_OPEN'
+    );
+
+    const isLeftSidebarOpen = isLeftSidebarOpenString
+        ? JSON.parse(isLeftSidebarOpenString)
+        : false;
 
     const initialContextMenu = {
         show: false,
         x: 0,
         y: 0,
-        index: null
+        index: null,
     };
 
     const [contextMenu, setContextMenu] = useState(initialContextMenu);
 
     const showContextMenu = (index, e) => {
         e.preventDefault();
-        const { pageX, pageY } = e;
-        setContextMenu({ show: true, x: pageX, y: pageY, index });
+        const { clientX, clientY } = e;
+        const { scrollX, scrollY } = window;
+
+        console.log(isLeftSidebarOpen);
+
+        if (isLeftSidebarOpen) {
+            const sidebarWidth = 350;
+            const adjustedX = clientX - sidebarWidth;
+            setContextMenu({
+                show: true,
+                x: adjustedX + scrollX,
+                y: clientY + scrollY,
+                index,
+            });
+        } else {
+            setContextMenu({
+                show: true,
+                x: clientX + scrollX,
+                y: clientY + scrollY,
+                index,
+            });
+        }
     };
 
     const hideContextMenu = () => setContextMenu(initialContextMenu);

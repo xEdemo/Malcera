@@ -10,11 +10,15 @@ const GameHeader = ({
     setIsRightSidebarOpen,
 }) => {
     const toggleLeftSidebar = () => {
-        setIsLeftSidebarOpen(!isLeftSidebarOpen);
+        const newValue = !isLeftSidebarOpen;
+        setIsLeftSidebarOpen(newValue);
+        localStorage.setItem('IS_LEFT_SIDEBAR_OPEN', JSON.stringify(newValue));
     };
 
     const toggleRightSidebar = () => {
-        setIsRightSidebarOpen(!isRightSidebarOpen);
+        const newValue = !isRightSidebarOpen;
+        setIsRightSidebarOpen(newValue);
+        localStorage.setItem('IS_RIGHT_SIDEBAR_OPEN', JSON.stringify(newValue));
     };
     return (
         <>

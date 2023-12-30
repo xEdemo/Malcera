@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ChatBox, GameHeader, LeftSidebar, RightSidebar } from '../index.jsx';
 
 const Layout = () => {
-    const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
-    const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+    const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(
+        JSON.parse(localStorage.getItem('IS_LEFT_SIDEBAR_OPEN')) || false
+    );
+    const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(
+        JSON.parse(localStorage.getItem('IS_RIGHT_SIDEBAR_OPEN')) || false
+    );
+
     return (
         <div
             style={{
@@ -47,4 +52,4 @@ const Layout = () => {
         </div>
     );
 };
-export default Layout;
+export default memo(Layout);

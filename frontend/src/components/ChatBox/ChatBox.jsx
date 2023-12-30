@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { ContextMenu, useContextMenu } from '../../components';
 import { toast } from 'react-toastify';
 import { Cog6ToothIcon as OutlineCog6ToothIcon } from '@heroicons/react/24/outline';
 import Filter from 'bad-words';
@@ -58,6 +59,8 @@ const ChatBox = () => {
     const [chatBoxHeight, setChatBoxHeight] = useState();
     const [overlayHeight, setOverlayHeight] = useState();
 
+    const { contextMenu, showContextMenu } = useContextMenu();
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -78,7 +81,7 @@ const ChatBox = () => {
         localStorage.setItem('SHOW_TIMESTAMPS', JSON.stringify(newValue));
     };
 
-    const parseMessage = (message) => {
+    const parseLink = (message) => {
         const messageContent = message.content.content;
         const linkRegex =
             /(?:https?:\/\/)?(?:www\.)?(\S+\.[a-zA-Z]{2,}(?:[^\s.,;!?()]|$))/gi;
@@ -132,7 +135,7 @@ const ChatBox = () => {
         }
 
         if ('globalMessage' in messageData) {
-            const parsedMessage = parseMessage(messageData.globalMessage);
+            const parsedMessage = parseLink(messageData.globalMessage);
             setMessages((prevMessages) => [...prevMessages, parsedMessage]);
         }
     };
@@ -162,7 +165,10 @@ const ChatBox = () => {
                     const now = new Date();
 
                     // Get UTC time string in HH:mm:ss format
-                    const utcTimeString = now.toISOString().split('T')[1].slice(0, 8);
+                    const utcTimeString = now
+                        .toISOString()
+                        .split('T')[1]
+                        .slice(0, 8);
 
                     const globalMessage = {
                         sender: userInfo.username,
@@ -183,11 +189,13 @@ const ChatBox = () => {
     };
 
     const handleResizeStart = (e) => {
-        setResizeState({
-            resizing: true,
-            startHeight: chatBoxContainerRef.current.clientHeight,
-            startMouseY: e.clientY,
-        });
+        if (e.key !== 'Button2') {
+            setResizeState({
+                resizing: true,
+                startHeight: chatBoxContainerRef.current.clientHeight,
+                startMouseY: e.clientY,
+            });
+        }
     };
 
     const handleDuringResize = (e) => {
@@ -292,6 +300,7 @@ const ChatBox = () => {
 
     return (
         <>
+            <ContextMenu contextMenu={contextMenu} />
             {showOptionsMenu && (
                 <div
                     className="chat-box-overlay"
@@ -400,6 +409,7 @@ const ChatBox = () => {
                     <div
                         onClick={toggleChatBox}
                         className="chat-box-close"
+                        onContextMenu={showContextMenu}
                     ></div>
                 </div>
             )}
@@ -442,8 +452,14 @@ const ChatBox = () => {
                                         )}{' '}
                                     {message.content.sender && (
                                         <>
-                                            {message.content.sender}:{' '}
-                                            {message.content.content}
+                                            <span
+                                                onContextMenu={(e) =>
+                                                    showContextMenu(index, e)
+                                                }
+                                            >
+                                                {message.content.sender}
+                                            </span>
+                                            : {message.content.content}
                                         </>
                                     )}
                                 </>
