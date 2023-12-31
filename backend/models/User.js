@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['user', 'admin', 'superAdmin'],
+            enum: ['user', 'playerMod', 'forumMod', 'admin', 'superAdmin'],
             default: 'user',
         },
         banned: {

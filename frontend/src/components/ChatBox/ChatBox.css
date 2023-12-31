@@ -102,6 +102,7 @@
 .chat-box-options-cog {
     height: 24px;
     width: 24px;
+    min-width: 24px;
     cursor: pointer;
 }
 
@@ -112,6 +113,7 @@
 .chat-box-close {
     height: 36.38px;
     width: 36.38px;
+    min-width: 36.38px;
     margin-left: 5px;
     position: relative;
 }
@@ -159,11 +161,8 @@
     display: flex;
     flex-direction: column;
     box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.4);
-    border: 1px solid #001F3F; /* Dark Blue */
+    border: 1px solid #001f3f; /* Dark Blue */
     border-radius: 8px; /* Adds rounded corners */
-
-
-
 }
 
 .chat-box-container:hover {
@@ -204,12 +203,40 @@
     font-size: 1.2rem;
 }
 
+.chat-box-sender-username:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .chat-box-message-region p a {
     color: var(--theme-blue-400);
 }
 
 .chat-box-message-region p a:hover {
     color: var(--theme-blue-300);
+}
+
+.chat-box-badges {
+    width: 1.2rem;
+    height: 1.2rem;
+    vertical-align: middle;
+    margin-bottom: 2.5px;
+}
+
+.chat-box-badges.forum-mod-badge {
+    color: var(--theme-green-500);
+}
+
+.chat-box-badges.player-mod-badge {
+    color: var(--theme-grey-300);
+}
+
+.chat-box-badges.admin-badge {
+    color: var(--theme-blue-400);
+}
+
+.chat-box-badges.super-admin-badge {
+    color: var(--theme-yellow-500);
 }
 
 .chat-box-input-container {

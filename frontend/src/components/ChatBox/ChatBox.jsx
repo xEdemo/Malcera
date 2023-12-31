@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { ContextMenu, useContextMenu } from '../../components';
 import { toast } from 'react-toastify';
 import { Cog6ToothIcon as OutlineCog6ToothIcon } from '@heroicons/react/24/outline';
+import { StarIcon } from '@heroicons/react/24/solid';
 import Filter from 'bad-words';
 import Typo from 'typo-js';
 
@@ -171,6 +172,7 @@ const ChatBox = () => {
                         .slice(0, 8);
 
                     const globalMessage = {
+                        badge: userInfo.role,
                         sender: userInfo.username,
                         content: inputValue,
                         timestamp: utcTimeString,
@@ -409,7 +411,6 @@ const ChatBox = () => {
                     <div
                         onClick={toggleChatBox}
                         className="chat-box-close"
-                        onContextMenu={showContextMenu}
                     ></div>
                 </div>
             )}
@@ -444,7 +445,7 @@ const ChatBox = () => {
                                             <span
                                                 style={{
                                                     display: 'inline-block',
-                                                    width: '63.25px',
+                                                    width: '60.25px',
                                                 }}
                                             >
                                                 ({message.content.timestamp})
@@ -452,7 +453,24 @@ const ChatBox = () => {
                                         )}{' '}
                                     {message.content.sender && (
                                         <>
+                                            {message.content.badge ===
+                                                'forumMod' && (
+                                                <StarIcon className="chat-box-badges forum-mod-badge" />
+                                            )}{' '}
+                                            {message.content.badge ===
+                                                'playerMod' && (
+                                                <StarIcon className="chat-box-badges player-mod-badge" />
+                                            )}{' '}
+                                            {message.content.badge ===
+                                                'admin' && (
+                                                <StarIcon className="chat-box-badges admin-badge" />
+                                            )}{' '}
+                                            {message.content.badge ===
+                                                'superAdmin' && (
+                                                <StarIcon className="chat-box-badges super-admin-badge" />
+                                            )}{' '}
                                             <span
+                                                className="chat-box-sender-username"
                                                 onContextMenu={(e) =>
                                                     showContextMenu(index, e)
                                                 }
@@ -516,4 +534,4 @@ const ChatBox = () => {
     );
 };
 
-export default ChatBox;
+export default memo(ChatBox);
