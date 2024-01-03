@@ -23,6 +23,7 @@ const Temple = require('./Temple.js')
 const SentientItem = require('./SentientItem.js')
 const Resource = require('./Resource.js')
 const Artifact = require('./Artifact.js')
+const ReligiousCovenant = require('./ReligiousCovenant.js')
 
 module.exports = {
     User,
@@ -49,5 +50,6 @@ module.exports = {
     Temple,
     SentientItem,
     Resource,
-    Artifact
+    Artifact,
+    ReligiousCovenant
 };
