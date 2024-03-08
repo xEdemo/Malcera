@@ -46,6 +46,7 @@ const templeRouter = require('./routes/templeRoutes.js');
 const sentientItemRouter = require('./routes/sentientItemRoutes.js');
 const resourceRouter = require('./routes/resourceRoutes.js')
 const artifactRouter = require('./routes/artifactRoutes.js')
+const religiouscovenantRouter = require('./routes/religiousCovenantRoutes.js')
 
 // Cybersecurity
 app.use(helmet());
@@ -82,7 +83,8 @@ app.use('/api/v1/weather', weatherRouter);
 app.use('/api/v1/temple', templeRouter);
 app.use('/api/v1/sentient-item', sentientItemRouter);
 app.use('/api/v1/resource', resourceRouter);
-app.use('/api/v1/artifact', artifactRouter);
+app.use('/api/v1/artifact', artifactRouter)
+app.use('/api/v1/religious-covenant', religiouscovenantRouter)
 
 // Error handlers
 app.use(notFound);
