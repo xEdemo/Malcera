@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ContextMenu, useContextMenu } from '../../components';
+import { ChatBoxContextMenu, useChatBoxContextMenu } from '../../components';
 import { toast } from 'react-toastify';
 import { Cog6ToothIcon as OutlineCog6ToothIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
@@ -60,7 +60,7 @@ const ChatBox = () => {
     const [chatBoxHeight, setChatBoxHeight] = useState();
     const [overlayHeight, setOverlayHeight] = useState();
 
-    const { contextMenu, showContextMenu } = useContextMenu();
+    const { contextMenu, showContextMenu } = useChatBoxContextMenu();
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -302,7 +302,7 @@ const ChatBox = () => {
 
     return (
         <>
-            <ContextMenu contextMenu={contextMenu} />
+            <ChatBoxContextMenu contextMenu={contextMenu} />
             {showOptionsMenu && (
                 <div
                     className="chat-box-overlay"

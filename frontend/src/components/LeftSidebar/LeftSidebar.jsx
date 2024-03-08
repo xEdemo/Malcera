@@ -13,7 +13,7 @@ import {
     getInventory,
 } from '../../slices/inventory/inventorySlice.js';
 import debounce from 'lodash.debounce';
-import { ContextMenu, useContextMenu } from '../../components';
+import { InventoryContextMenu, useInventoryContextMenu } from '../../components';
 import {
     inventoryReducer,
     sidebarReducer,
@@ -45,7 +45,7 @@ const LeftSidebar = () => {
     const [onDrop, { onDropError }] = useUpdateInventoryOnDropMutation();
     const { data: inventoryData, error } = useGetInventoryQuery();
 
-    const { contextMenu, showContextMenu } = useContextMenu();
+    const { contextMenu, showContextMenu } = useInventoryContextMenu();
     const [contextMenuItemName, setContextMenuItemName] = useState('');
     const [checkStackable, setCheckStackable] = useState(false);
     const [checkQuantity, setCheckQuantity] = useState(0);
@@ -356,7 +356,7 @@ const LeftSidebar = () => {
 
     return (
         <div className="left-sidebar">
-            <ContextMenu
+            <InventoryContextMenu
                 contextMenu={contextMenu}
                 itemName={contextMenuItemName}
                 splitStackableItem={checkStackable}

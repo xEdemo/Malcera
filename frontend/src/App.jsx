@@ -7,7 +7,8 @@ import './index.css';
 import './components/Loading/Loading.css';
 import './components/Navbar/Navbar.css';
 import './components/Footer/Footer.css';
-import './components/ContextMenu/ContextMenu.css';
+import './components/ContextMenu/InventoryContextMenu.css';
+import './components/ContextMenu/ChatBoxContextMenu.css';
 import './components/Layout/Layout.css'
 import './components/GameHeader/GameHeader.css';
 import './components/LeftSidebar/LeftSidebar.css';

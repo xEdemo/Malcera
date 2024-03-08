@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const useContextMenu = () => {
-    const isLeftSidebarOpenString = localStorage.getItem(
-        'IS_LEFT_SIDEBAR_OPEN'
-    );
-
-    const isLeftSidebarOpen = isLeftSidebarOpenString
-        ? JSON.parse(isLeftSidebarOpenString)
-        : false;
+const useInventoryContextMenu = () => {
 
     const initialContextMenu = {
         show: false,
@@ -23,25 +16,12 @@ const useContextMenu = () => {
         const { clientX, clientY } = e;
         const { scrollX, scrollY } = window;
 
-        console.log(isLeftSidebarOpen);
-
-        if (isLeftSidebarOpen) {
-            const sidebarWidth = 350;
-            const adjustedX = clientX - sidebarWidth;
-            setContextMenu({
-                show: true,
-                x: adjustedX + scrollX,
-                y: clientY + scrollY,
-                index,
-            });
-        } else {
-            setContextMenu({
-                show: true,
-                x: clientX + scrollX,
-                y: clientY + scrollY,
-                index,
-            });
-        }
+        setContextMenu({
+            show: true,
+            x: clientX + scrollX,
+            y: clientY + scrollY,
+            index,
+        });
     };
 
     const hideContextMenu = () => setContextMenu(initialContextMenu);
@@ -64,4 +44,4 @@ const useContextMenu = () => {
 
     return { contextMenu, showContextMenu };
 };
-export default useContextMenu;
+export default useInventoryContextMenu;

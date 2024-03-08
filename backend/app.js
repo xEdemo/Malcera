@@ -4,8 +4,11 @@ require('express-async-errors');
 const cors = require('cors')
 const express = require('express');
 const app = express();
+
+// WebSocket import
 const initWebSocket = require('./socket');
 
+// Cybersecurity imports
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -44,13 +47,15 @@ const sentientItemRouter = require('./routes/sentientItemRoutes.js');
 const resourceRouter = require('./routes/resourceRoutes.js')
 const artifactRouter = require('./routes/artifactRoutes.js')
 
+// Cybersecurity
 app.use(helmet());
 app.use(cors());
 app.use(mongoSanitize());
+app.use(cookieParser(process.env.JWT_SECRET));
+
+// Required for Postman 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(cookieParser(process.env.JWT_SECRET));
 
 app.use('/api/v1/user', authUserRouter);
 app.use('/api/v1/mob', mobRouter);
@@ -77,7 +82,7 @@ app.use('/api/v1/weather', weatherRouter);
 app.use('/api/v1/temple', templeRouter);
 app.use('/api/v1/sentient-item', sentientItemRouter);
 app.use('/api/v1/resource', resourceRouter);
-app.use('/api/v1/artifact', artifactRouter)
+app.use('/api/v1/artifact', artifactRouter);
 
 // Error handlers
 app.use(notFound);

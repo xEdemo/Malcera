@@ -2,8 +2,10 @@ import Footer from './Footer/Footer.jsx';
 import Loading from './Loading/Loading.jsx';
 import Navbar from './Navbar/Navbar.jsx';
 import PrivateRoute from './PrivateRoute.jsx';
-import ContextMenu from './ContextMenu/ContextMenu.jsx';
-import useContextMenu from './ContextMenu/useContextMenu.jsx';
+import InventoryContextMenu from './ContextMenu/InventoryContextMenu.jsx';
+import useInventoryContextMenu from './ContextMenu/useInventoryContextMenu.jsx';
+import useChatBoxContextMenu from './ContextMenu/useChatBoxContextMenu.jsx';
+import ChatBoxContextMenu from './ContextMenu/ChatBoxContextMenu.jsx';
 import Layout from './Layout/Layout.jsx';
 import GameHeader from './GameHeader/GameHeader.jsx';
 import LeftSidebar from './LeftSidebar/LeftSidebar.jsx';
@@ -15,8 +17,10 @@ export {
     Loading,
     Navbar,
     PrivateRoute,
-    ContextMenu,
-    useContextMenu,
+    InventoryContextMenu,
+    useInventoryContextMenu,
+    useChatBoxContextMenu,
+    ChatBoxContextMenu,
     Layout,
     GameHeader,
     LeftSidebar,

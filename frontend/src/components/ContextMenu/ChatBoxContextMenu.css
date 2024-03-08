@@ -1,0 +1,9 @@
+.context-menu-chat-box-main {
+    position: absolute;
+    width: 100%;
+    z-index: 9999;
+    background-color: rgba(26, 26, 26, 0.95);
+    max-width: 10rem;
+    border-radius: 5px;
+    /* transform: translate(0%, -119%); */
+}

@@ -160,14 +160,12 @@
     padding: 0px;
     display: flex;
     flex-direction: column;
-    box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.4);
-    border: 1px solid #001f3f; /* Dark Blue */
-    border-radius: 8px; /* Adds rounded corners */
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.4);
 }
 
 .chat-box-container:hover {
     overflow: visible; /* Show content overflow when hovered for better usability */
-    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
 }
 
 .chat-box-container:active {

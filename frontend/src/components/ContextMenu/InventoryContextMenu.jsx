@@ -5,7 +5,7 @@ import {
 } from '../../slices/inventory/inventoryApiSlice.js';
 import { toast } from 'react-toastify';
 
-const ContextMenu = ({
+const InventoryContextMenu = ({
     contextMenu,
     itemName,
     splitStackableItem,
@@ -202,7 +202,7 @@ const ContextMenu = ({
     );
 };
 
-export default memo(ContextMenu);
+export default memo(InventoryContextMenu);
 
 // How to use:
 // import { ContextMenu, useContextMenu } from '../../components'
