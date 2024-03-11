@@ -5,8 +5,6 @@ import {
 } from '../../slices/inventory/inventoryApiSlice.js';
 import { toast } from 'react-toastify';
 
-//rrr
-
 const InventoryContextMenu = ({
     contextMenu,
     itemName,
