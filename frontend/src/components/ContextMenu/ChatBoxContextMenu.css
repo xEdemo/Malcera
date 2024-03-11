@@ -1,9 +1,36 @@
 .context-menu-chat-box-main {
     position: absolute;
-    width: 100%;
+    width: fit-content;
     z-index: 9999;
     background-color: rgba(26, 26, 26, 0.95);
-    max-width: 10rem;
     border-radius: 5px;
-    /* transform: translate(0%, -119%); */
+}
+
+.context-menu-chat-box-main p {
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.3rem;
+    border-bottom: 1px solid black;
+}
+
+.context-menu-chat-box-main p:last-child {
+    border-bottom: 1px solid transparent;
+}
+
+.context-menu-chat-box-main p:hover {
+    background-color: rgba(49, 51, 56, 0.5);
+}
+
+.context-menu-chat-box-main p:active {
+    background-color: rgba(67, 69, 73, 0.5);
+}
+
+.context-menu-chat-box-main p:first-child:hover {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.context-menu-chat-box-main p.user-context-menu-username:hover {
+    cursor: default;
+    background-color: rgba(26, 26, 26, 0.0);
 }

@@ -5,30 +5,6 @@ import { ChatBoxContextMenu, useChatBoxContextMenu } from '../../components';
 import { toast } from 'react-toastify';
 import { Cog6ToothIcon as OutlineCog6ToothIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
-import Filter from 'bad-words';
-import Typo from 'typo-js';
-
-const filter = new Filter();
-let dictionary = new Typo();
-
-const loadDictionary = async () => {
-    const affPath =
-        '../../../node_modules/typo-js/dictionaries/en_US/en_US.dic\n';
-    const dicPath =
-        '../../../node_modules/typo-js/dictionaries/en_US/en_US.dic\n';
-
-    // Load the dictionary files
-    const [affData, dicData] = await Promise.all([
-        fetch(affPath).then((response) => response.text()),
-        fetch(dicPath).then((response) => response.text()),
-    ]);
-
-    // Create Typo instance
-    dictionary = new Typo('en_US', affData, dicData);
-
-    // Now you can use the 'dictionary' instance
-    console.log(dictionary.check('example')); // Example usage
-};
 
 const ChatBox = () => {
     const [inputValue, setInputValue] = useState('');
@@ -61,6 +37,7 @@ const ChatBox = () => {
     const [overlayHeight, setOverlayHeight] = useState();
 
     const { contextMenu, showContextMenu } = useChatBoxContextMenu();
+    const [contextUsername, setContextUsername] = useState('');
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -143,49 +120,40 @@ const ChatBox = () => {
 
     const handleSend = () => {
         if (inputValue.trim() !== '') {
-            // Check for profanity
-            const filteredContent = filter.clean(inputValue);
+            // Continue with sending the message
+            if (messageCount === 0) {
+                // Start the message timer
+                const timer = setInterval(() => {
+                    setMessageCount(0);
+                    clearInterval(timer); // Reset and clear the timer after a minute
+                }, 60000);
+                setMessageTimer(timer);
+            }
 
-            // Check if the content was changed
-            if (filteredContent !== inputValue) {
-                // Handle profanity violation (e.g., warn the user, prevent sending)
-                toast.error('Profanity detected. Message not sent.');
+            // Check message count before sending
+            if (messageCount < 20) {
+                const now = new Date();
+
+                // Get UTC time string in HH:mm:ss format
+                const utcTimeString = now
+                    .toISOString()
+                    .split('T')[1]
+                    .slice(0, 8);
+
+                const globalMessage = {
+                    badge: userInfo.role,
+                    sender: userInfo.username,
+                    content: inputValue,
+                    timestamp: utcTimeString,
+                };
+
+                ws.send(JSON.stringify({ globalMessage }));
+                // Increment message count
+                setMessageCount((prevCount) => prevCount + 1);
+
+                setInputValue('');
             } else {
-                // Continue with sending the message
-                if (messageCount === 0) {
-                    // Start the message timer
-                    const timer = setInterval(() => {
-                        setMessageCount(0);
-                        clearInterval(timer); // Reset and clear the timer after a minute
-                    }, 60000);
-                    setMessageTimer(timer);
-                }
-
-                // Check message count before sending
-                if (messageCount < 20) {
-                    const now = new Date();
-
-                    // Get UTC time string in HH:mm:ss format
-                    const utcTimeString = now
-                        .toISOString()
-                        .split('T')[1]
-                        .slice(0, 8);
-
-                    const globalMessage = {
-                        badge: userInfo.role,
-                        sender: userInfo.username,
-                        content: inputValue,
-                        timestamp: utcTimeString,
-                    };
-
-                    ws.send(JSON.stringify({ globalMessage }));
-                    // Increment message count
-                    setMessageCount((prevCount) => prevCount + 1);
-
-                    setInputValue('');
-                } else {
-                    toast.error('Message limit exceeded. Wait for a minute.');
-                }
+                toast.error('Message limit exceeded. Wait for a minute.');
             }
         }
     };
@@ -297,12 +265,20 @@ const ChatBox = () => {
     }, [messages, showChatBox, resizeState]);
 
     useEffect(() => {
-        loadDictionary();
-    }, []);
+        if (contextMenu.index !== undefined) {
+            const usersUsername = messages[contextMenu.index]?.content?.sender;
+            if (usersUsername) {
+                setContextUsername(usersUsername);
+            }
+        }
+    }, [contextMenu]);
 
     return (
         <>
-            <ChatBoxContextMenu contextMenu={contextMenu} />
+            <ChatBoxContextMenu 
+                contextMenu={contextMenu} 
+                contextUsername={contextUsername} 
+            />
             {showOptionsMenu && (
                 <div
                     className="chat-box-overlay"
@@ -455,19 +431,19 @@ const ChatBox = () => {
                                         <>
                                             {message.content.badge ===
                                                 'forumMod' && (
-                                                <StarIcon className="chat-box-badges forum-mod-badge" />
+                                                <StarIcon className="chat-box-badges forum-mod-badge" title='Forum Moderator' />
                                             )}{' '}
                                             {message.content.badge ===
                                                 'playerMod' && (
-                                                <StarIcon className="chat-box-badges player-mod-badge" />
+                                                <StarIcon className="chat-box-badges player-mod-badge" title='Player Moderator' />
                                             )}{' '}
                                             {message.content.badge ===
                                                 'admin' && (
-                                                <StarIcon className="chat-box-badges admin-badge" />
+                                                <StarIcon className="chat-box-badges admin-badge" title='Administrator' />
                                             )}{' '}
                                             {message.content.badge ===
                                                 'superAdmin' && (
-                                                <StarIcon className="chat-box-badges super-admin-badge" />
+                                                <StarIcon className="chat-box-badges super-admin-badge" title='God' />
                                             )}{' '}
                                             <span
                                                 className="chat-box-sender-username"
@@ -494,18 +470,6 @@ const ChatBox = () => {
                             value={inputValue}
                             onChange={(e) => {
                                 const newText = e.target.value;
-                                const misspelledWords = newText
-                                    .split(/\s+/)
-                                    .filter((word) => !dictionary.check(word));
-
-                                if (misspelledWords.length > 0) {
-                                    // Display error message or take appropriate action
-                                    console.log(
-                                        'Misspelled Words:',
-                                        misspelledWords
-                                    );
-                                }
-
                                 setInputValue(newText);
                             }}
                             onKeyDown={(e) => {

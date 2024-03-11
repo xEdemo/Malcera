@@ -20,26 +20,12 @@ const useChatBoxContextMenu = () => {
 
     const showContextMenu = (index, e) => {
         e.preventDefault();
-        const { clientX, clientY, target } = e;
         const { scrollX, scrollY } = window;
 
         // Calculate the position of the username element
-        const usernameRect = target.getBoundingClientRect();
+        const usernameRect = e.target.getBoundingClientRect();
         const usernameX = usernameRect.right + scrollX;
         const usernameY = usernameRect.top + scrollY + usernameRect.height / 2; // Middle of the username
-
-        // Calculate the position of the last element in the list
-        const lastElement = document.querySelector(
-            '.context-menu-chat-box-main p:last-child'
-        );
-        const lastElementRect = lastElement
-            ? lastElement.getBoundingClientRect()
-            : null;
-        const lastElementY = lastElementRect
-            ? lastElementRect.top + scrollY + lastElementRect.height / 2
-            : 0; // Middle of the last element, or 0 if lastElementRect is null
-
-        console.log(lastElement);
 
         // Calculate the adjusted X position based on the sidebar status
         const adjustedX = isLeftSidebarOpen ? usernameX - 350 : usernameX;
@@ -47,11 +33,9 @@ const useChatBoxContextMenu = () => {
         setContextMenu({
             show: true,
             x: adjustedX,
-            y: usernameY - 272.5, // Adjust y-value to align username with last element
+            y: usernameY, // Adjusted y-value to align username with last element
             index,
         });
-
-        
     };
 
     const hideContextMenu = () => setContextMenu(initialContextMenu);

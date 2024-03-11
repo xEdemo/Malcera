@@ -3,7 +3,7 @@
     width: 100%;
     z-index: 9999;
     background-color: rgba(26, 26, 26, 0.95);
-    max-width: 10rem;
+    max-width: 11rem;
     border-radius: 5px;
     transform: translate(-50%, -65%);
 }
@@ -35,6 +35,10 @@ Right now, this is a simple fix, but needs to be more dynamic.
 
 .context-menu-main p:hover {
     background-color: rgba(49, 51, 56, 0.5);
+}
+
+.context-menu-main p:active {
+    background-color: rgba(67, 69, 73, 0.5);
 }
 
 .item-name-context-menu {
