@@ -11,8 +11,11 @@ const InventoryContextMenu = ({
     splitStackableItem,
     checkOriginalQuantity,
     index,
+    scrollY,
     rerenderInventory,
 }) => {
+    const { x, y } = contextMenu;
+
     const [splitAmount, setSplitAmount] = useState(1);
     const [isSplitting, setIsSplitting] = useState(false);
     const [splitStack] = useSplitStackMutation();
@@ -85,18 +88,15 @@ const InventoryContextMenu = ({
         <>
             {contextMenu.show && (
                 <div
-                    className={`context-menu-main ${
-                        splitStackableItem ? 'stackable' : ''
-                    } ${checkOriginalQuantity > 1 ? '' : 'non-splitable'}`}
+                    className='context-menu-main'
                     style={{
-                        top: `${contextMenu.y}px`,
-                        left: `${contextMenu.x}px`,
+                        top: `${y + scrollY}px`,
+                        left: `${x}px`,
                     }}
                 >
                     {itemName && (
                         <p className="item-name-context-menu">{itemName}</p>
                     )}
-                    <p>Context Menu</p>
                     {splitStackableItem && checkOriginalQuantity > 1 && (
                         <p onClick={() => setIsSplitting(true)}>Split</p>
                     )}

@@ -13,13 +13,15 @@ const useInventoryContextMenu = () => {
 
     const showContextMenu = (index, e) => {
         e.preventDefault();
-        const { clientX, clientY } = e;
-        const { scrollX, scrollY } = window;
 
+        const itemRect = e.target.getBoundingClientRect();
+        const itemX = (itemRect.right - (48 + 31)); // Adjust according to your requirements
+        const itemY = itemRect.top - (itemRect.height / 2) - scrollY;
+    
         setContextMenu({
             show: true,
-            x: clientX + scrollX,
-            y: clientY + scrollY,
+            x: itemX,
+            y: itemY,
             index,
         });
     };

@@ -94,6 +94,7 @@ const LeftSidebar = () => {
         dispatchSidebar({ type: 'TOGGLE_CHARACTER' });
     };
 
+    const leftSidebarRef = useRef(null);
     const inventoryContainerRef = useRef(null);
 
     const handleDragStart = (index, e) => {
@@ -355,13 +356,17 @@ const LeftSidebar = () => {
     const handleDragEndDebounced = debounce(handleDragEnd, 0);
 
     return (
-        <div className="left-sidebar">
+        <div 
+            className="left-sidebar" 
+            ref={leftSidebarRef}
+        >
             <InventoryContextMenu
                 contextMenu={contextMenu}
                 itemName={contextMenuItemName}
                 splitStackableItem={checkStackable}
                 checkOriginalQuantity={checkQuantity}
                 index={checkIndex}
+                scrollY={leftSidebarRef.current?.scrollTop}
                 rerenderInventory={rerenderInventory}
             />
             <div className="left-sidebar-content-container">

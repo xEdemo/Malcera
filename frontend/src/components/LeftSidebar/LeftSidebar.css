@@ -6,7 +6,6 @@
     transform: translateX(0%);
     /* Breaks 100vw for left sidebar on mobile */
     overflow-y: auto;
-    
 }
 
 .left-sidebar-open {

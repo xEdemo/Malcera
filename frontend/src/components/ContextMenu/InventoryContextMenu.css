@@ -5,20 +5,6 @@
     background-color: rgba(26, 26, 26, 0.95);
     max-width: 11rem;
     border-radius: 5px;
-    transform: translate(-50%, -65%);
-}
-
-/*
-Create an algorithm to handle an offset of y values based the conditional rendering of the children.
-Right now, this is a simple fix, but needs to be more dynamic.
-*/
-
-.context-menu-main.stackable {
-    transform: translate(-50%, -50%);
-}
-
-.context-menu-main.non-splitable {
-    transform: translate(-50%, -65%);
 }
 
 .context-menu-main p {
