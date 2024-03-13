@@ -11,6 +11,8 @@ import GameHeader from './GameHeader/GameHeader.jsx';
 import LeftSidebar from './LeftSidebar/LeftSidebar.jsx';
 import RightSidebar from './RightSidebar/RightSidebar.jsx';
 import ChatBox from './ChatBox/ChatBox.jsx';
+import Inventory from './Inventory/Inventory.jsx';
+import Character from './Character/Character.jsx';
 
 export {
     Footer,
@@ -26,4 +28,6 @@ export {
     LeftSidebar,
     RightSidebar,
     ChatBox,
+    Inventory,
+    Character,
 };

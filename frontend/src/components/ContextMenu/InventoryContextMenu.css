@@ -48,12 +48,11 @@
 
 .left-sidebar-content-container.splitting,
 .left-sidebar-content-container.deleting {
-    padding: 0;
+    position: absolute;
 }
 
 .inventory-container.splitting,
 .inventory-container.deleting {
-    position: absolute;
     padding: 1rem;
     height: 424px;
     background-color: var(--theme-grey-o-900);
@@ -62,7 +61,7 @@
     align-items: center;
     justify-content: center;
     border: none;
-    margin-top: 43px;
+    margin-top: 23px;
 }
 
 .split-context-menu,

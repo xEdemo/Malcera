@@ -9,8 +9,10 @@ import './components/Navbar/Navbar.css';
 import './components/Footer/Footer.css';
 import './components/ContextMenu/InventoryContextMenu.css';
 import './components/ContextMenu/ChatBoxContextMenu.css';
-import './components/Layout/Layout.css'
+import './components/Layout/Layout.css';
 import './components/GameHeader/GameHeader.css';
+import './components/Inventory/Inventory.css';
+import './components/Character/Character.css';
 import './components/LeftSidebar/LeftSidebar.css';
 import './components/RightSidebar/RightSidebar.css';
 import './pages/Landing/Landing.css';

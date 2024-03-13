@@ -90,7 +90,7 @@ const InventoryContextMenu = ({
                 <div
                     className='context-menu-main'
                     style={{
-                        top: `${y + scrollY}px`,
+                        top: `${scrollY ? scrollY : 0 + y}px`,
                         left: `${x}px`,
                     }}
                 >

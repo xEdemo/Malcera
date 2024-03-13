@@ -463,6 +463,22 @@ const ChatBox = () => {
                 </div>
 
                 <div className="chat-box-input-container">
+                    {userInfo?.role === 
+                        'forumMod' && (
+                        <StarIcon className="chat-box-badges forum-mod-badge" title='Forum Moderator' />
+                    )}{' '}
+                    {userInfo?.role === 
+                        'playerMod' && (
+                            <StarIcon className="chat-box-badges player-mod-badge" title='Player Moderator' />
+                    )}{' '}
+                    {userInfo?.role === 
+                        'admin' && (
+                            <StarIcon className="chat-box-badges admin-badge" title='Administrator' />
+                    )}{' '}
+                    {userInfo?.role === 
+                        'superAdmin' && (
+                            <StarIcon className="chat-box-badges super-admin-badge" title='God' />
+                    )}{' '}
                     <b>{userInfo?.username}:</b>
                     <div className="chat-box-input-region">
                         <input
