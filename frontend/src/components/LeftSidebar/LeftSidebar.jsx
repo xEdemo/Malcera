@@ -99,7 +99,9 @@ const LeftSidebar = () => {
                     )}{' '}
                 </p>
                 {sidebarState.isCharacterOpen && (
-                    <Character />
+                    <Character 
+                        isCharacterOpen={sidebarState.isCharacterOpen}
+                    />
                 )}
                 <p>Other here</p>
             </div>

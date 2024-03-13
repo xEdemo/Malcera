@@ -1,38 +1,29 @@
 .character-container {
-    width: 330px;
+    position: relative;
+    width: 280px;
     border: 1px solid var(--theme-grey-o-400);
+    /* Transition does not work */
     transition: 0.2s ease;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
+    gap: 35px;
 }
 
 .equipment-slot {
     width: 48px;
     height: 48px;
     border: 1px solid var(--theme-grey-o-400);
-    margin: 4px;
-    box-sizing: border-box;
 }
 
-#helmet {
-    order: 1;
-    margin-top: 16px; /* Adjust as needed */
+.ammo-container {
+    position: absolute;
+    top: 6px;
+    left: 226px;
 }
 
-#shoulders {
-    order: 2;
-}
-
-#chest {
-    order: 3;
-}
-
-#greaves {
-    order: 4;
-}
-
-#boots {
-    order: 5;
-    margin-bottom: 16px; /* Adjust as needed */
+.character-container div :not(:first-child) {
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
