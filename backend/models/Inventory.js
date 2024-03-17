@@ -31,6 +31,9 @@ const InventorySchema = new mongoose.Schema(
                     consumable: {
                         type: Boolean,
                     },
+                    equippable: {
+                        type: Boolean,
+                    },
                     healAmount: {
                         type: Number,
                     },

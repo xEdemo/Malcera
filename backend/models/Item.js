@@ -22,6 +22,10 @@ const ItemSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        equippable: {
+            type: Boolean,
+            default: false,
+        },
         healAmount: {
             type: Number,
         },

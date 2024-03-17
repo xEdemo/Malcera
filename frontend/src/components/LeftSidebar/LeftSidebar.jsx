@@ -1,10 +1,8 @@
-import { useEffect, useRef, useReducer } from 'react';
+import { useEffect, useRef, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import { useSelector, useDispatch } from 'react-redux';
-import { getInventory } from '../../slices/inventory/inventorySlice.js';
 import {
-    inventoryReducer,
     sidebarReducer,
 } from '../../reducers/LeftSiderbarReducer.js';
 import { Inventory, Character } from '../';
@@ -23,11 +21,7 @@ const loadSidebarStateFromLocalStorage = () => {
 const LeftSidebar = () => {
     const [sidebarState, dispatchSidebar] = useReducer(sidebarReducer, loadSidebarStateFromLocalStorage());
 
-    const [inventoryState, dispatchInventory] = useReducer(inventoryReducer, {
-        inventoryItems: [],
-        updatedInventoryItems: [],
-    });
-
+    const [scrollY, setScrollY] = useState(0);
     const leftSidebarRef = useRef(null);
 
     const navigate = useNavigate();
@@ -35,32 +29,10 @@ const LeftSidebar = () => {
 
     const { userInfo } = useSelector((state) => state.user);
 
-    const fetchInventoryData = async () => {
-        try {
-            const res = await dispatch(getInventory());
-            if (
-                res.payload &&
-                res.payload.updatedInventory &&
-                res.payload.updatedInventory.slots
-            ) {
-                dispatchInventory({
-                    type: 'SET_INVENTORY_ITEMS',
-                    payload: res.payload.updatedInventory.slots,
-                });
-            }
-        } catch (error) {
-            console.error('Error fetching inventory', error);
-        }
-    };
-
     const handleToggleInventory = async () => {
         dispatchSidebar({ type: 'TOGGLE_INVENTORY' });
         //setContextMenuItemName('');
         //setCheckStackable(false);
-
-        if (!sidebarState.isInventoryOpen) {
-            await fetchInventoryData();
-        }
     };
 
     const handleToggleCharacter = () => {
@@ -70,6 +42,25 @@ const LeftSidebar = () => {
     useEffect(() => {
         saveSidebarStateToLocalStorage(sidebarState);
     }, [sidebarState]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            // Check if leftSidebarRef.current is truthy before accessing scrollTop
+            if (leftSidebarRef.current) {
+                setScrollY(leftSidebarRef.current.scrollTop)
+            }
+        };
+    
+        if (leftSidebarRef.current) {
+            leftSidebarRef.current.addEventListener('scroll', handleScroll);
+        }
+    
+        return () => {
+            if (leftSidebarRef.current) {
+                leftSidebarRef.current.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, [leftSidebarRef]);
 
     return (
         <div 
@@ -87,7 +78,7 @@ const LeftSidebar = () => {
                 </p>
                 {sidebarState.isInventoryOpen && (
                     <Inventory
-                        scrollTop={leftSidebarRef.current?.scrollTop}
+                        scrollTop={scrollY}
                     />
                 )}
                 <p onClick={handleToggleCharacter}>

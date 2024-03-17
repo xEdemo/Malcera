@@ -17,6 +17,16 @@
     border: 1px solid var(--theme-grey-o-400);
 }
 
+.character-container b {
+    position: absolute;
+    font-size: 1.4rem;
+    top: 6px;
+    left: 6px;
+    padding: 2px;
+    border: 1px solid var(--theme-grey-o-400);
+    cursor: pointer;
+}
+
 .ammo-container {
     position: absolute;
     top: 6px;

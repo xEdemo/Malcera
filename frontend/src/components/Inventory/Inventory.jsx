@@ -349,7 +349,8 @@ const Inventory = ({ scrollTop }) => {
                                                     index
                                                     ? 1
                                                     : 'auto',
-                                            transform:
+                                            // Suspect of buggy drag and drop 
+                                            transform: 
                                                 draggedItem &&
                                                 draggedItemRef.current ===
                                                     index

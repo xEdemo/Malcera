@@ -1,3 +1,5 @@
+import { BoltIcon } from '@heroicons/react/24/outline';
+
 const Character = ({ isCharacterOpen }) => {
     const characterHeight = isCharacterOpen ? 340 : 0;
 
@@ -9,8 +11,12 @@ const Character = ({ isCharacterOpen }) => {
                     height: characterHeight,
                 }}
             >
+                <b>Stats</b>
                 <div className="ammo-container">
-                    <div className="equipment-slot" id="ammo-slot"></div>
+                    <div className="equipment-slot" id="ammo-slot">
+                        {/* Temp placeholder / example */}
+                        <BoltIcon style={{color: "rgba(255, 0, 0, 0.3)"}}/>
+                    </div>
                 </div>
                 <div>
                     <div className="equipment-slot" id="mantle-slot"></div>
