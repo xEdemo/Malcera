@@ -24,6 +24,7 @@ const authUserRouter = require('./routes/userRoutes.js');
 const mobRouter = require('./routes/mobRoutes.js');
 const battleRouter = require('./routes/battleRoutes.js');
 const itemRouter = require('./routes/itemRoutes.js');
+const characterRouter = require('./routes/characterRoutes.js');
 const npcRouter = require('./routes/npcRoutes.js');
 const bookRouter = require('./routes/bookRoutes.js');
 const floraRouter = require('./routes/floraRoutes.js');
@@ -62,6 +63,7 @@ app.use('/api/v1/user', authUserRouter);
 app.use('/api/v1/mob', mobRouter);
 app.use('/api/v1/battle', battleRouter);
 app.use('/api/v1/item', itemRouter);
+app.use('/api/v1/character', characterRouter)
 app.use('/api/v1/npc', npcRouter);
 app.use('/api/v1/flora', floraRouter);
 app.use('/api/v1/fauna', faunaRouter);

@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
-const { User, Inventory, Item } = require('../models');
+const { User, Inventory, Item, Character } = require('../models');
 const { createJWT } = require('../utils');
 
 // @desc    Sign Up a new user
@@ -22,9 +22,13 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.create({ username, email, password });
-    const inventory = await Inventory.create({ user: user._id });
 
+    const inventory = await Inventory.create({ user: user._id });
     user.inventory = inventory._id;
+    await user.save();
+
+    const character = await Character.create({ user: user._id });
+    user.character = character._id;
     await user.save();
 
     const hatchetId = '64cac3298525d56c05347d01';
@@ -51,6 +55,7 @@ const registerUser = asyncHandler(async (req, res) => {
             quantity: numberOfStarterHatchets,
             stackable: hatchetItem.stackable,
             consumable: hatchetItem.consumable,
+            equippable: hatchetItem.equippable,
             healAmount: hatchetItem.healAmount,
             armourRating: hatchetItem.armourRating,
             weaponPower: hatchetItem.weaponPower,
@@ -65,6 +70,7 @@ const registerUser = asyncHandler(async (req, res) => {
                 quantity: 1,
                 stackable: hatchetItem.stackable,
                 consumable: hatchetItem.consumable,
+                equippable: hatchetItem.equippable,
                 healAmount: hatchetItem.healAmount,
                 armourRating: hatchetItem.armourRating,
                 weaponPower: hatchetItem.weaponPower,
@@ -81,6 +87,7 @@ const registerUser = asyncHandler(async (req, res) => {
             quantity: numberOfStarterPickaxes,
             stackable: pickaxeItem.stackable,
             consumable: pickaxeItem.consumable,
+            equippable: pickaxeItem.equippable,
             healAmount: pickaxeItem.healAmount,
             armourRating: pickaxeItem.armourRating,
             weaponPower: pickaxeItem.weaponPower,
@@ -95,6 +102,7 @@ const registerUser = asyncHandler(async (req, res) => {
                 quantity: 1,
                 stackable: pickaxeItem.stackable,
                 consumable: pickaxeItem.consumable,
+                equippable: pickaxeItem.equippable,
                 healAmount: pickaxeItem.healAmount,
                 armourRating: pickaxeItem.armourRating,
                 weaponPower: pickaxeItem.weaponPower,
@@ -111,6 +119,7 @@ const registerUser = asyncHandler(async (req, res) => {
             quantity: numberOfStarterBreadCrumbs,
             stackable: breadCrumbsItem.stackable,
             consumable: breadCrumbsItem.consumable,
+            equippable: breadCrumbsItem.equippable,
             healAmount: breadCrumbsItem.healAmount,
             armourRating: breadCrumbsItem.armourRating,
             weaponPower: breadCrumbsItem.weaponPower,
@@ -125,6 +134,7 @@ const registerUser = asyncHandler(async (req, res) => {
                 quantity: 1,
                 stackable: breadCrumbsItem.stackable,
                 consumable: breadCrumbsItem.consumable,
+                equippable: breadCrumbsItem.equippable,
                 healAmount: breadCrumbsItem.healAmount,
                 armourRating: breadCrumbsItem.armourRating,
                 weaponPower: breadCrumbsItem.weaponPower,
@@ -149,29 +159,29 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const emptySlots = Array.from(
         { length: emptySlotsNeeded },
-        () => emptySlotItem
+        () => ({ item: emptySlotId, ...emptySlotItem.toObject() })
     );
     inventory.slots.push(...emptySlots);
 
-    const itemIndex = inventory.slots.findIndex((slot) => {
-        return slot.item && slot.item.toString() === pickaxeItem._id.toString();
-    });
+    await inventory.save();
 
-    const newSlotIndex = 10;
-
-    if (itemIndex !== -1) {
-        const movedItem = inventory.slots[itemIndex]; // Get the item to move
-        inventory.slots[itemIndex] = emptySlotItem; // Set the source slot to a pseudo item
-
-        // Swap operation - swap with the item in the target slot
-        const targetItem = inventory.slots[newSlotIndex];
-        inventory.slots[newSlotIndex] = movedItem;
-
-        //console.log('Moved Item:', movedItem);
-        //console.log('Target Slot:', targetItem);
+    // Populate character slots
+    character.equipment = {
+        helmet: { item: emptySlotId, ...emptySlotItem.toObject()},
+        neck: { item: emptySlotId, ...emptySlotItem.toObject() },
+        chest: { item: emptySlotId, ...emptySlotItem.toObject() },
+        greaves: { item: emptySlotId, ...emptySlotItem.toObject() },
+        boots: { item: emptySlotId, ...emptySlotItem.toObject() },
+        gauntlets: { item: emptySlotId, ...emptySlotItem.toObject() },
+        weaponRight: { item: emptySlotId, ...emptySlotItem.toObject() },
+        weaponLeft: { item: emptySlotId, ...emptySlotItem.toObject() },
+        handJewelryRight: { item: emptySlotId, ...emptySlotItem.toObject() },
+        handJewelryLeft: { item: emptySlotId, ...emptySlotItem.toObject() },
+        mantle: { item: emptySlotId, ...emptySlotItem.toObject() },
+        ammo: { item: emptySlotId, ...emptySlotItem.toObject() },
     }
 
-    await inventory.save();
+    await character.save();
 
     if (user) {
         res.status(StatusCodes.CREATED).json({
@@ -179,6 +189,7 @@ const registerUser = asyncHandler(async (req, res) => {
             username: user.username,
             email: user.email,
             inventory: user.inventory,
+            character: user.character,
         });
     } else {
         res.status(StatusCodes.BAD_REQUEST);
@@ -197,9 +208,11 @@ const authUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    const inventory = await Inventory.findOne({ _id: user.inventory });
 
     if (user && (await user.matchPassword(password))) {
+        const inventory = await Inventory.findOne({ _id: user.inventory });
+        const character = await Character.findOne({ _id: user.character });
+        
         createJWT(res, user._id);
 
         // Send info to front end to display
@@ -224,6 +237,7 @@ const authUser = asyncHandler(async (req, res) => {
             actionStatus: user.actionStatus,
             role: user.role,
             inventory,
+            character,
         });
     } else {
         res.status(StatusCodes.UNAUTHORIZED);
@@ -280,13 +294,20 @@ const updateUser = asyncHandler(async (req, res) => {
 
 // @desc    Delete user and associated data
 // route    DELETE /api/v1/user/:userId
-// @access  Private
+// @access  Private --- Super Admin
 const deleteUser = asyncHandler(async (req, res) => {
     const { userId } = req.params;
 
     const user = await User.findById(userId);
 
+    if (!user) {
+        res.status(StatusCodes.NOT_FOUND);
+        throw new Error(`No user found with an id of ${userId}.`);
+    }
+
     await Inventory.findByIdAndDelete(user.inventory);
+
+    await Character.findByIdAndDelete(user.character)
 
     await User.findByIdAndDelete(user._id);
 

@@ -3,6 +3,7 @@ const Mob = require('./Mob.js');
 const Battle = require('./Battle.js');
 const Inventory = require('./Inventory.js');
 const Item = require('./Item.js');
+const Character = require('./Character.js')
 const Npc = require('./Npc.js');
 const Book = require('./Book.js');
 const Mount = require('./Mount.js')
@@ -31,6 +32,7 @@ module.exports = {
     Battle,
     Inventory,
     Item,
+    Character,
     Npc,
     Book,
     Mount,

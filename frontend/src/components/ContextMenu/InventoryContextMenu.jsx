@@ -9,6 +9,7 @@ const InventoryContextMenu = ({
     contextMenu,
     itemName,
     splitStackableItem,
+    checkEquippable,
     checkOriginalQuantity,
     index,
     scrollY,
@@ -95,16 +96,16 @@ const InventoryContextMenu = ({
                     }}
                 >
                     {itemName && (
-                        <p className="item-name-context-menu">{itemName}</p>
+                        <p>{itemName}</p>
+                    )}
+                    {checkEquippable && (
+                        <p>Equip</p>
                     )}
                     {splitStackableItem && checkOriginalQuantity > 1 && (
                         <p onClick={() => setIsSplitting(true)}>Split</p>
                     )}
                     {itemName && (
-                        <p
-                            style={{ color: 'red' }}
-                            onClick={() => setIsRemoving(true)}
-                        >
+                        <p onClick={() => setIsRemoving(true)}>
                             Delete
                         </p>
                     )}

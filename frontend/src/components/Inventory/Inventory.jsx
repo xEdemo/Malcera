@@ -39,6 +39,7 @@ const Inventory = ({ scrollTop }) => {
     const { contextMenu, showContextMenu } = useInventoryContextMenu();
     const [contextMenuItemName, setContextMenuItemName] = useState('');
     const [checkStackable, setCheckStackable] = useState(false);
+    const [checkEquippable, setCheckEquippable] = useState(false);
     const [checkQuantity, setCheckQuantity] = useState(0);
     const [checkIndex, setCheckIndex] = useState(null);
 
@@ -279,8 +280,11 @@ const Inventory = ({ scrollTop }) => {
         if (contextMenu.index !== undefined) {
             const itemName = inventoryItems[contextMenu.index]?.name;
             const isStackable = inventoryItems[contextMenu.index]?.stackable;
+            const isEquippable = inventoryItems[contextMenu.index]?.equippable;
             const stackQuantity = inventoryItems[contextMenu.index]?.quantity;
             const itemIndex = contextMenu.index;
+
+            console.log("isEquippable: ", isEquippable);
 
             const checkForEmptySlot = inventoryItems.some(
                 (item) => item.name === 'Empty Slot'
@@ -296,6 +300,11 @@ const Inventory = ({ scrollTop }) => {
             }
             if (stackQuantity) {
                 setCheckQuantity(stackQuantity);
+            }
+            if (isEquippable && checkForEmptySlot) {
+                setCheckEquippable(isEquippable)
+            } else {
+                setCheckEquippable(false);
             }
             if (itemIndex !== null) {
                 setCheckIndex(itemIndex);
@@ -315,6 +324,7 @@ const Inventory = ({ scrollTop }) => {
                 contextMenu={contextMenu}
                 itemName={contextMenuItemName}
                 splitStackableItem={checkStackable}
+                checkEquippable={checkEquippable}
                 checkOriginalQuantity={checkQuantity}
                 index={checkIndex}
                 rerenderInventory={rerenderInventory}
@@ -342,6 +352,7 @@ const Inventory = ({ scrollTop }) => {
                                     <img
                                         src={inventoryItem?.image}
                                         alt={inventoryItem?.name}
+                                        title={inventoryItem?.description}
                                         style={{
                                             zIndex:
                                                 draggedItem &&

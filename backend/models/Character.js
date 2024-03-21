@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const InventorySlotSchema = new mongoose.Schema(
+const CharacterSlotSchema = new mongoose.Schema(
     {
         item: {
             type: mongoose.Schema.Types.ObjectId,
@@ -40,23 +40,30 @@ const InventorySlotSchema = new mongoose.Schema(
     { _id: false }
 );
 
-const InventorySchema = new mongoose.Schema(
+const CharacterSchema = new mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
-        slots: {
-            type: [InventorySlotSchema],
-            validate: [
-                (slots) => slots.length <= 40,
-                'Your inventory is full.',
-            ],
+        equipment: {
+            helmet: CharacterSlotSchema,
+            neck: CharacterSlotSchema,
+            chest: CharacterSlotSchema,
+            greaves: CharacterSlotSchema,
+            boots: CharacterSlotSchema,
+            gauntlets: CharacterSlotSchema,
+            weaponRight: CharacterSlotSchema,
+            weaponLeft: CharacterSlotSchema,
+            handJewelryRight: CharacterSlotSchema,
+            handJewelryLeft: CharacterSlotSchema,
+            mantle: CharacterSlotSchema,
+            ammo: CharacterSlotSchema,
         },
     },
     { timestamps: true }
 );
 
-const Inventory = mongoose.model('Inventory', InventorySchema);
+const Character = mongoose.model('Character', CharacterSchema);
 
-module.exports = Inventory;
+module.exports = Character;

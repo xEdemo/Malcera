@@ -101,6 +101,10 @@ const UserSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Inventory',
         },
+        character: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Character',
+        }
     },
     {
         toJSON: { virtuals: true },
@@ -148,11 +152,13 @@ UserSchema.pre('save', function (next) {
 });
 
 UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
-        next();
+    if (!this.isModified('password') || this.isPasswordHashed) {
+        return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    this.isPasswordHashed = true;
+    next();
 });
 
 UserSchema.methods.matchPassword = async function (enteredPassword) {
