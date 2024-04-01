@@ -27,6 +27,24 @@ const InventorySlotSchema = new mongoose.Schema(
         equippable: {
             type: Boolean,
         },
+        equippableTo: {
+            type: [String],
+            enum: [
+				"none",
+				"ammo",
+				"mantle",
+				"weaponRight",
+				"handJewelryRight",
+				"helmet",
+				"neck",
+				"chest",
+				"greaves",
+				"boots",
+				"gauntlets",
+				"weaponLeft",
+				"handJewelryLeft",
+			],
+        },
         healAmount: {
             type: Number,
         },

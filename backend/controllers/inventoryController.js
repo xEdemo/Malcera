@@ -184,7 +184,9 @@ const combineStackableItems = async (req, res) => {
         throw new Error('Could not find empty slot item.');
     }
 
-    inventory.slots[emptySlotIndex] = emptySlotItem;
+    const modifiedEmptySlotItem = { ...emptySlotItem.toObject(), item: emptySlotId }
+
+    inventory.slots[emptySlotIndex] = modifiedEmptySlotItem;
 
     inventory.slots[combinedIndex].quantity += draggedQuantity;
 
@@ -222,7 +224,8 @@ const removeItem = async (req, res) => {
         throw new Error('Could not find empty slot item.');
     }
 
-    inventory.slots[index] = emptySlotItem;
+    const modifiedEmptySlotItem = { ...emptySlotItem.toObject(), item: emptySlotId };
+    inventory.slots[index] = modifiedEmptySlotItem;
 
     await inventory.save();
 

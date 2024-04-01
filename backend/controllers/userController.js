@@ -33,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const hatchetId = '64cac3298525d56c05347d01';
     const pickaxeId = '64cbdded7ebd956606da7694';
-    const breadCrumbsId = '64cbdea9de2266abdc3aa002';
+    const breadCrumbsId = '6600b968511dd95ac667965f';
     const emptySlotId = '655ac0ef72adb7c251f09e80';
 
     const hatchetItem = await Item.findById(hatchetId);

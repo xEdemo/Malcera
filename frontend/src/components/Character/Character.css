@@ -17,6 +17,13 @@
     border: 1px solid var(--theme-grey-o-400);
 }
 
+.character-default-img {
+    padding: 2px;
+    width: 46px;
+    height: 46px;
+    color: rgba(239, 239, 239, 0.15);
+}
+
 .character-container b {
     position: absolute;
     font-size: 1.4rem;

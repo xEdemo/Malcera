@@ -1,12 +1,16 @@
-import { apiSlice } from '../apiSlice.js';
-import { CHARACTER_URL } from '../rootRoutes.js';
+import { apiSlice } from "../apiSlice.js";
+import { CHARACTER_URL } from "../rootRoutes.js";
 
 export const characterApiSlice = apiSlice.injectEndpoints({
-    endpoints: (builder) => ({
-
-    })
+	endpoints: (builder) => ({
+		updateCharacterOnEquip: builder.mutation({
+			query: (data) => ({
+				url: `${CHARACTER_URL}/on-equip`,
+				method: "PUT",
+				body: data,
+			}),
+		}),
+	}),
 });
 
-export const {
-
-} = characterApiSlice;
+export const { useUpdateCharacterOnEquipMutation } = characterApiSlice;

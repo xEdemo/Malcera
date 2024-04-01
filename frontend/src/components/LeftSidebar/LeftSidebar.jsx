@@ -6,6 +6,7 @@ import {
     sidebarReducer,
 } from '../../reducers/LeftSiderbarReducer.js';
 import { Inventory, Character } from '../';
+import { getCharacter } from "../../slices/character/characterSlice.js";
 
 // Function to save sidebar state to local storage
 const saveSidebarStateToLocalStorage = (state) => {
@@ -20,6 +21,8 @@ const loadSidebarStateFromLocalStorage = () => {
 
 const LeftSidebar = () => {
     const [sidebarState, dispatchSidebar] = useReducer(sidebarReducer, loadSidebarStateFromLocalStorage());
+
+    const [character, setCharacter] = useState({});
 
     const [scrollY, setScrollY] = useState(0);
     const leftSidebarRef = useRef(null);
@@ -42,6 +45,23 @@ const LeftSidebar = () => {
     useEffect(() => {
         saveSidebarStateToLocalStorage(sidebarState);
     }, [sidebarState]);
+
+    const fetchCharacterData = async () => {
+        try {
+            const res = await dispatch(getCharacter());
+            setCharacter(res.payload.character);
+        } catch (error) {
+            console.error("Error fetching character.", error);
+        }
+    };
+
+    const rerenderCharacter = () => {
+        fetchCharacterData();
+    };
+
+    useEffect(() => {
+        fetchCharacterData();
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -79,6 +99,7 @@ const LeftSidebar = () => {
                 {sidebarState.isInventoryOpen && (
                     <Inventory
                         scrollTop={scrollY}
+                        rerenderCharacter={rerenderCharacter}
                     />
                 )}
                 <p onClick={handleToggleCharacter}>
@@ -92,6 +113,8 @@ const LeftSidebar = () => {
                 {sidebarState.isCharacterOpen && (
                     <Character 
                         isCharacterOpen={sidebarState.isCharacterOpen}
+                        character={character}
+                        rerenderCharacter={rerenderCharacter}
                     />
                 )}
                 <p>Other here</p>

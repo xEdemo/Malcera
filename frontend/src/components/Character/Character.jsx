@@ -1,39 +1,180 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { getCharacter } from '../../slices/character/characterSlice.js';
-import { BoltIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getCharacter } from "../../slices/character/characterSlice.js";
+import {
+    GiQuiver,
+    GiSpikedShoulderArmor,
+    GiShardSword,
+    GiSkullRing,
+    GiHeavyHelm,
+    GiEmeraldNecklace,
+    GiAbdominalArmor,
+    GiLegArmor,
+    GiArmoredPants,
+    GiGauntlet,
+} from "react-icons/gi";
+import itemImages from "../../utils/itemImages.js";
 
-const Character = ({ isCharacterOpen }) => {
-    const [character, setCharacter] = useState({});
+const Character = ({ isCharacterOpen, character, rerenderCharacter }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const fetchCharacterData = async () => {
-        try {
-            const res = await dispatch(getCharacter());
-            setCharacter(res.payload.character);
-        } catch (error) {
-            console.error('Error fetching character.', error);
-        }
-    }
-
-    const rerenderCharacter = () => {
-        fetchCharacterData();
-    }
-
     useEffect(() => {
-        fetchCharacterData();
+        rerenderCharacter();
     }, []);
 
     const renderEquipmentSlot = (slotId) => {
         const item = character.equipment?.[slotId];
+
         if (!item) return null;
 
-        // Replace the <img> src and alt attributes with the corresponding item data
-        return (
-            <img src={item?.image} alt={item?.name} />
-        );
+        if (slotId === "ammo") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiQuiver
+                        className="character-default-img"
+                        title="Ammo Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "mantle") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiSpikedShoulderArmor
+                        className="character-default-img"
+                        title="Mantle Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "weaponRight") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiShardSword
+                        className="character-default-img"
+                        style={{ transform: "scaleY(-1) scaleX(-1)" }}
+                        title="Right Weapon Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "handJewelryRight") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiSkullRing
+                        className="character-default-img"
+                        title="Right Hand Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "helmet") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiHeavyHelm
+                        className="character-default-img"
+                        title="Helmet Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "neck") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiEmeraldNecklace
+                        className="character-default-img"
+                        title="Necklace Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "chest") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiAbdominalArmor
+                        className="character-default-img"
+                        title="Chest Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "greaves") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiArmoredPants
+                        className="character-default-img"
+                        title="Greave Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "boots") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiLegArmor
+                        className="character-default-img"
+                        title="Boot Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "gauntlets") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiGauntlet
+                        className="character-default-img"
+                        title="Gauntlet Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "weaponLeft") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiShardSword
+                        className="character-default-img"
+                        style={{ transform: "scaleY(-1)" }}
+                        title="Left Weapon Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
+        if (slotId === "handJewelryLeft") {
+            if (item?.name === "Empty Slot") {
+                return (
+                    <GiSkullRing
+                        className="character-default-img"
+                        title="Left Hand Slot"
+                    />
+                );
+            } else {
+                return <img src={itemImages[item?.name]} alt={item?.name} title={item?.description} />;
+            }
+        }
     };
 
     const characterHeight = isCharacterOpen ? 340 : 0;
@@ -49,53 +190,54 @@ const Character = ({ isCharacterOpen }) => {
                 <b>Stats</b>
                 <div className="ammo-container">
                     <div className="equipment-slot" id="ammo-slot">
-                        {renderEquipmentSlot('ammo')}
-                        {/* Temp placeholder / example */}
-                        {/* <BoltIcon style={{color: "rgba(255, 0, 0, 0.3)"}}/> */}
+                        {renderEquipmentSlot("ammo")}
                     </div>
                 </div>
                 <div>
                     <div className="equipment-slot" id="mantle-slot">
-                        {renderEquipmentSlot('mantle')}
+                        {renderEquipmentSlot("mantle")}
                     </div>
                     <div className="equipment-slot" id="weapon-right-slot">
-                        {renderEquipmentSlot('weaponRight')}
+                        {renderEquipmentSlot("weaponRight")}
                     </div>
-                    <div className="equipment-slot" id="hand-jewelry-right-slot">
-                        {renderEquipmentSlot('handJewelryRight')}
+                    <div
+                        className="equipment-slot"
+                        id="hand-jewelry-right-slot"
+                    >
+                        {renderEquipmentSlot("handJewelryRight")}
                     </div>
                 </div>
                 <div>
                     <div className="equipment-slot" id="helmet-slot">
-                        {renderEquipmentSlot('helmet')}
+                        {renderEquipmentSlot("helmet")}
                     </div>
                     <div className="equipment-slot" id="neck-slot">
-                        {renderEquipmentSlot('neck')}
+                        {renderEquipmentSlot("neck")}
                     </div>
                     <div className="equipment-slot" id="chest-slot">
-                        {renderEquipmentSlot('chest')}
+                        {renderEquipmentSlot("chest")}
                     </div>
                     <div className="equipment-slot" id="greaves-slot">
-                        {renderEquipmentSlot('greaves')}
+                        {renderEquipmentSlot("greaves")}
                     </div>
                     <div className="equipment-slot" id="boots-slot">
-                        {renderEquipmentSlot('boots')}
+                        {renderEquipmentSlot("boots")}
                     </div>
                 </div>
                 <div>
                     <div className="equipment-slot" id="gauntlets-slot">
-                        {renderEquipmentSlot('gauntlets')}
+                        {renderEquipmentSlot("gauntlets")}
                     </div>
                     <div className="equipment-slot" id="weapon-left-slot">
-                        {renderEquipmentSlot('weaponLeft')}
+                        {renderEquipmentSlot("weaponLeft")}
                     </div>
                     <div className="equipment-slot" id="hand-jewelry-left-slot">
-                        {renderEquipmentSlot('handJewelryLeft')}   
+                        {renderEquipmentSlot("handJewelryLeft")}
                     </div>
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
 export default Character;
