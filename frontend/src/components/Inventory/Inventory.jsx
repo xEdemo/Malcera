@@ -1,33 +1,26 @@
 import React from "react";
-import { useState, useEffect, useRef, useReducer } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
 	useUpdateInventoryOnDropMutation,
 	useCombineStackMutation,
 } from "../../slices/inventory/inventoryApiSlice.js";
-import { getInventory } from "../../slices/inventory/inventorySlice.js";
 import debounce from "lodash.debounce";
 import {
 	InventoryContextMenu,
 	useInventoryContextMenu,
 } from "../../components";
-import { inventoryReducer } from "../../reducers/LeftSiderbarReducer.js";
 import itemImages from "../../utils/itemImages.js";
 
 const inventoryRows = 8;
 const inventoryColumns = 5;
 const inventorySlots = inventoryRows * inventoryColumns;
 
-const Inventory = ({ scrollTop, rerenderCharacter }) => {
+const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrollTop, rerenderCharacter }) => {
 	const sidebarState = JSON.parse(localStorage.getItem("SIDEBAR_STATE"));
 
-	const [inventoryState, dispatchInventory] = useReducer(inventoryReducer, {
-		inventoryItems: [],
-		updatedInventoryItems: [],
-	});
 	const inventoryItems = inventoryState.inventoryItems;
-	const updatedInventoryItems = inventoryState.updatedInventoryItems;
 
 	const [draggedItem, setDraggedItem] = useState(null);
 	const draggedItemRef = useRef(null);
@@ -52,29 +45,6 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 	const dispatch = useDispatch();
 
 	const { userInfo } = useSelector((state) => state.user);
-
-	// Useful function to update the inventory whenever something happens
-	const fetchInventoryData = async () => {
-		try {
-			const res = await dispatch(getInventory());
-			if (
-				res.payload &&
-				res.payload.updatedInventory &&
-				res.payload.updatedInventory.slots
-			) {
-				dispatchInventory({
-					type: "SET_INVENTORY_ITEMS",
-					payload: res.payload.updatedInventory.slots,
-				});
-			}
-		} catch (error) {
-			console.error("Error fetching inventory", error);
-		}
-	};
-
-	const rerenderInventory = () => {
-		fetchInventoryData();
-	};
 
 	const handleDragStart = (index, e) => {
 		e.stopPropagation();
@@ -143,7 +113,7 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 		}
 
 		try {
-			const updatedItems = [...updatedInventoryItems];
+			const updatedItems = [...inventoryItems];
 			const tempItem = updatedItems[draggedItemRef.current];
 
 			updatedItems[draggedItemRef.current] = updatedItems[newIndex];
@@ -265,11 +235,6 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 		};
 	}, []);
 
-	// Loads data in if local storage is true for isInventoryOpen
-	useEffect(() => {
-		fetchInventoryData();
-	}, []);
-
 	useEffect(() => {
 		if (!contextMenu.show) {
 			// setContextMenuItemName('');
@@ -302,7 +267,7 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 			if (stackQuantity) {
 				setCheckQuantity(stackQuantity);
 			}
-			if (isEquippable && checkForEmptySlot) {
+			if (isEquippable) {
 				setCheckEquippable(isEquippable);
 			} else {
 				setCheckEquippable(false);
@@ -312,8 +277,6 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 			}
 		}
 	}, [contextMenu]);
-
-	const inventoryHeight = sidebarState.isInventoryOpen ? 424 : 0;
 
 	// May be needed to limit actions; second value is in milliseconds
 	const handleDragStartDebounced = debounce(handleDragStart, 0);
@@ -336,9 +299,6 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 				className={`inventory-container ${
 					sidebarState.isInventoryOpen ? "open" : ""
 				}`}
-				style={{
-					height: inventoryHeight,
-				}}
 				onMouseMove={handleDrag}
 				onMouseUp={handleDragEndDebounced}
 				onTouchStart={handleTouchStart}
@@ -346,7 +306,7 @@ const Inventory = ({ scrollTop, rerenderCharacter }) => {
 				onTouchEnd={handleDragEndDebounced}
 				ref={inventoryContainerRef}
 			>
-				{updatedInventoryItems.map((inventoryItem, index) => (
+				{inventoryItems.map((inventoryItem, index) => (
 					<React.Fragment key={index}>
 						<div className={`inventory-slot`}>
 							{inventoryItem?.name !== "Empty Slot" && (

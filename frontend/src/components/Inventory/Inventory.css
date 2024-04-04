@@ -1,5 +1,6 @@
 .inventory-container {
 	width: 264px;
+	height: 424px;
 	border: 1px solid var(--theme-grey-o-400);
 	transition: 0.2s ease;
 	display: grid;

@@ -10,7 +10,15 @@ export const characterApiSlice = apiSlice.injectEndpoints({
 				body: data,
 			}),
 		}),
+		unequipOnClick: builder.mutation({
+			query: (data) => ({
+				url: `${CHARACTER_URL}/unequip-click`,
+				method: "PUT",
+				body: data,
+			}),
+		}),
 	}),
 });
 
-export const { useUpdateCharacterOnEquipMutation } = characterApiSlice;
+export const { useUpdateCharacterOnEquipMutation, useUnequipOnClickMutation } =
+	characterApiSlice;

@@ -7,6 +7,8 @@ import {
 } from '../../reducers/LeftSiderbarReducer.js';
 import { Inventory, Character } from '../';
 import { getCharacter } from "../../slices/character/characterSlice.js";
+import { getInventory } from "../../slices/inventory/inventorySlice.js";
+import { inventoryReducer } from "../../reducers/LeftSiderbarReducer.js";
 
 // Function to save sidebar state to local storage
 const saveSidebarStateToLocalStorage = (state) => {
@@ -22,6 +24,10 @@ const loadSidebarStateFromLocalStorage = () => {
 const LeftSidebar = () => {
     const [sidebarState, dispatchSidebar] = useReducer(sidebarReducer, loadSidebarStateFromLocalStorage());
 
+    const [inventoryState, dispatchInventory] = useReducer(inventoryReducer, {
+		inventoryItems: [],
+	});
+
     const [character, setCharacter] = useState({});
 
     const [scrollY, setScrollY] = useState(0);
@@ -34,8 +40,6 @@ const LeftSidebar = () => {
 
     const handleToggleInventory = async () => {
         dispatchSidebar({ type: 'TOGGLE_INVENTORY' });
-        //setContextMenuItemName('');
-        //setCheckStackable(false);
     };
 
     const handleToggleCharacter = () => {
@@ -45,6 +49,33 @@ const LeftSidebar = () => {
     useEffect(() => {
         saveSidebarStateToLocalStorage(sidebarState);
     }, [sidebarState]);
+
+    const fetchInventoryData = async () => {
+		try {
+			const res = await dispatch(getInventory());
+			if (
+				res.payload &&
+				res.payload.updatedInventory &&
+				res.payload.updatedInventory.slots
+			) {
+				dispatchInventory({
+					type: "SET_INVENTORY_ITEMS",
+					payload: res.payload.updatedInventory.slots,
+				});
+			}
+		} catch (error) {
+			console.error("Error fetching inventory", error);
+		}
+	};
+
+	const rerenderInventory = () => {
+		fetchInventoryData();
+	};
+
+    useEffect(() => {
+		fetchInventoryData();
+	}, []);
+
 
     const fetchCharacterData = async () => {
         try {
@@ -98,6 +129,9 @@ const LeftSidebar = () => {
                 </p>
                 {sidebarState.isInventoryOpen && (
                     <Inventory
+                        inventoryState={inventoryState}
+                        rerenderInventory={rerenderInventory}
+                        dispatchInventory={dispatchInventory}
                         scrollTop={scrollY}
                         rerenderCharacter={rerenderCharacter}
                     />
@@ -112,9 +146,9 @@ const LeftSidebar = () => {
                 </p>
                 {sidebarState.isCharacterOpen && (
                     <Character 
-                        isCharacterOpen={sidebarState.isCharacterOpen}
                         character={character}
                         rerenderCharacter={rerenderCharacter}
+                        rerenderInventory={rerenderInventory}
                     />
                 )}
                 <p>Other here</p>
