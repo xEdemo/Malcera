@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useReducer } from "react";
+import { memo, useState, useEffect } from "react";
 import {
 	useSplitStackMutation,
 	useRemoveItemMutation,
@@ -189,8 +189,8 @@ const InventoryContextMenu = ({
 					>
 						<div className="delete-context-menu">
 							<p>
-								Are you sure you want to delete the item '
-								{itemName}'?
+								Are you sure you want to delete the item 
+								'{itemName}'?
 							</p>
 							<button
 								className="close-btn-delete"

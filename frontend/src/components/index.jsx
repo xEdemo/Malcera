@@ -13,6 +13,7 @@ import RightSidebar from './RightSidebar/RightSidebar.jsx';
 import ChatBox from './ChatBox/ChatBox.jsx';
 import Inventory from './Inventory/Inventory.jsx';
 import Character from './Character/Character.jsx';
+import Canvas from './Canvas/Canvas.jsx';
 
 export {
     Footer,
@@ -30,4 +31,5 @@ export {
     ChatBox,
     Inventory,
     Character,
+    Canvas,
 };

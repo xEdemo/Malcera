@@ -25,7 +25,7 @@ const useChatBoxContextMenu = () => {
         // Calculate the position of the username element
         const usernameRect = e.target.getBoundingClientRect();
         const usernameX = usernameRect.right + scrollX;
-        const usernameY = usernameRect.top + scrollY + usernameRect.height / 2; // Middle of the username
+        const usernameY = usernameRect.top + scrollY + usernameRect.height / 2;
 
         // Calculate the adjusted X position based on the sidebar status
         const adjustedX = isLeftSidebarOpen ? usernameX - 350 : usernameX;

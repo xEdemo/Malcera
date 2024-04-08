@@ -16,7 +16,7 @@ const useInventoryContextMenu = () => {
 
         const itemRect = e.target.getBoundingClientRect();
         const itemX = (itemRect.right - (48 + 30)); // (second value) => width of cell + ((width of context menu (110) - width of cell) / 2) (this can be done dynamicly, but that is a lot of shit)
-        const itemY = itemRect.bottom - (itemRect.height * 1.35) - scrollY;
+        const itemY = itemRect.bottom - scrollY;
     
         setContextMenu({
             show: true,

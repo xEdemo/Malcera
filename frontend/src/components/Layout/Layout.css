@@ -4,6 +4,39 @@
     transform: translateX(0);
 }
 
-.main-content-space-push-right {
-    transform: translateX(-35rem);
+.left-sidebar,
+.right-sidebar {
+    max-width: 35rem;
+    min-width: 35rem;
+    height: 100vh;
+    background-color: var(--theme-background-secondary);
+    /* Breaks 100vw for left sidebar on mobile */
+    overflow-y: auto;
+}
+
+.left-sidebar-open {
+    margin-left: -35rem;
+}
+
+.right-sidebar-open {
+    margin-left: 35rem;
+}
+
+@media only screen and (max-width: 1050px) {
+    .left-sidebar {
+        width: 100vw;
+        overflow-y: initial;
+    }
+
+    .right-sidebar {
+        width: 100vw;
+    }
+
+    .right-sidebar {
+        position: absolute;
+    }
+    
+    .right-sidebar-open {
+        transform: translateX(0%);
+    }
 }

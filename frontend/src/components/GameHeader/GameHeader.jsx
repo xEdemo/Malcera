@@ -20,9 +20,18 @@ const GameHeader = ({
         setIsRightSidebarOpen(newValue);
         localStorage.setItem('IS_RIGHT_SIDEBAR_OPEN', JSON.stringify(newValue));
     };
+
+    const calculateMainContentWidth = () => {
+        let width = "100vw";
+        if (isLeftSidebarOpen && !isRightSidebarOpen) width = "calc(100vw - 35rem)";
+        if (!isLeftSidebarOpen && isRightSidebarOpen) width = "calc(100vw - 35rem)";
+        if (isLeftSidebarOpen && isRightSidebarOpen) width = "calc(100vw - 70rem)";
+        return width;
+    };
+
     return (
         <>
-            <div className="game-main-header">
+            <div className="game-main-header" style={{ width: calculateMainContentWidth() }}>
                 <div className="left-game-header-container">
                     {isLeftSidebarOpen ? (
                         <SolidRectangleStackIcon

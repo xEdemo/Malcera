@@ -250,8 +250,6 @@ const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrol
 			const stackQuantity = inventoryItems[contextMenu.index]?.quantity;
 			const itemIndex = contextMenu.index;
 
-			console.log("isEquippable: ", isEquippable);
-
 			const checkForEmptySlot = inventoryItems.some(
 				(item) => item.name === "Empty Slot"
 			);
