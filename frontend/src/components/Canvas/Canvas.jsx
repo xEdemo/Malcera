@@ -1,7 +1,7 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useLayoutEffect } from "react";
 
-const tileWidth = 120,
-	tileHeight = 120;
+const tileWidth = 100,
+	tileHeight = 100;
 const gridRows = 10,
 	gridColumns = 10;
 
@@ -19,9 +19,9 @@ const map = [
 ];
 const playerX = 3;
 const playerY = 3;
-const playerRadius = 30;
+const playerRadius = 25;
 
-const duration = 200; // speed of player animation in milliseconds
+const duration = 300; // speed of player animation in milliseconds
 
 const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 	const canvasRef = useRef(null);
@@ -69,32 +69,35 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		context.fill();
 	};
 
-	const animate = (canvas, context) => {
-		const offsetX =
-			(canvas.width - tileWidth) / 2 - playerPosition.x * tileWidth;
-		const offsetY =
-			(canvas.height - tileHeight) / 2 - playerPosition.y * tileHeight;
-		drawMap(context, offsetX, offsetY);
-		drawPlayer(context, offsetX, offsetY);
-		requestAnimationFrame(() => animate(canvas, context));
-	};
+	// const animate = (canvas, context) => {
+	// 	const offsetX =
+	// 		(canvas.width - tileWidth) / 2 - playerPosition.x * tileWidth;
+	// 	const offsetY =
+	// 		(canvas.height - tileHeight) / 2 - playerPosition.y * tileHeight;
+	// 	drawMap(context, offsetX, offsetY); // Does not need to be called often
+	// 	drawPlayer(canvas, context);
+	// 	requestAnimationFrame(() => animate(canvas, context));
+	// };
 
-	// Gets buggy after about 30 moves
 	const animatePlayer = (newX, newY) => {
 		const start = { x: playerPosition.x, y: playerPosition.y };
 		const end = { x: newX, y: newY };
 		const startTime = performance.now();
-	
+
+		const easeInOutQuad = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
 		const updatePosition = (timestamp) => {
 			const elapsed = timestamp - startTime;
 			const progress = Math.min(elapsed / duration, 1); // Ensure progress does not exceed 1
-	
+
+			const easedProgress = easeInOutQuad(progress);
+
 			// Interpolate between start and end positions
-			const interpolatedX = start.x + (end.x - start.x) * progress;
-			const interpolatedY = start.y + (end.y - start.y) * progress;
-	
+			const interpolatedX = start.x + (end.x - start.x) * easedProgress;
+			const interpolatedY = start.y + (end.y - start.y) * easedProgress;
+
 			setPlayerPosition({ x: interpolatedX, y: interpolatedY });
-	
+
 			// Continue animating until duration is reached
 			if (progress < 1) {
 				requestAnimationFrame(updatePosition);
@@ -102,7 +105,6 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 				setIsPlayerAnimating(false); // Animation complete
 			}
 		};
-	
 		setIsPlayerAnimating(true);
 		requestAnimationFrame(updatePosition);
 	};
@@ -131,41 +133,45 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		}
 		// Check if the new position is valid (not a wall)
 		if (map[newY][newX] === 1) {
-			setPlayerPosition({ x: newX, y: newY });
-			//animatePlayer(newX, newY);
+			//setPlayerPosition({ x: newX, y: newY });
+			animatePlayer(newX, newY);
 		} else {
 			// Play sounds or display a message
 		}
+	};
+
+	const resizeCanvas = (canvas, context) => {
+		const offsetX =
+			(canvas.width - tileWidth) / 2 - playerPosition.x * tileWidth;
+		const offsetY =
+			(canvas.height - tileHeight) / 2 - playerPosition.y * tileHeight;
+		canvas.width = canvas.offsetWidth;
+		canvas.height = canvas.offsetHeight;
+		drawMap(context, offsetX, offsetY);
+		drawPlayer(context, offsetX, offsetY);
 	};
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const context = canvas.getContext("2d");
 
-		const offsetX =
-			(canvas.width - tileWidth) / 2 - playerPosition.x * tileWidth;
-		const offsetY =
-			(canvas.height - tileHeight) / 2 - playerPosition.y * tileHeight;
-
-		const resizeCanvas = () => {
-			canvas.width = canvas.offsetWidth;
-			canvas.height = canvas.offsetHeight;
-			drawMap(context, offsetX, offsetY); // Redraw after resizing
-			drawPlayer(context, offsetX, offsetY);
-		};
-
-		window.addEventListener("resize", resizeCanvas);
+		window.addEventListener("resize", () => resizeCanvas(canvas, context));
 		window.addEventListener("keydown", handleKeyDown);
 
-		resizeCanvas();
-		animate(canvas, context);
+		resizeCanvas(canvas, context);
 
-		// Clean up event listeners
 		return () => {
-			window.removeEventListener("resize", resizeCanvas);
+			window.removeEventListener("resize", () => resizeCanvas(canvas, context));
 			window.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [isLeftSidebarOpen, isRightSidebarOpen, playerPosition]);
+
+	// Needed to render the position of camera and player properly
+	useLayoutEffect(() => {
+		const canvas = canvasRef.current;
+		const context = canvas.getContext("2d");
+		resizeCanvas(canvas, context);
+	}, [isLeftSidebarOpen, isRightSidebarOpen]);
 
 	return (
 		<div style={{ padding: "10px" }}>
