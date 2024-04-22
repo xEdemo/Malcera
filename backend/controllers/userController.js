@@ -242,6 +242,8 @@ const authUser = asyncHandler(async (req, res) => {
             jossPaper: user.jossPaper,
             actionStatus: user.actionStatus,
             role: user.role,
+            position: user.position,
+            currentMap: user.currentMap,
             inventory,
             character,
         });

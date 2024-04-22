@@ -97,6 +97,17 @@ const UserSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        position: {
+            type: {
+                x: { type: Number },
+                y: { type: Number },
+            },
+            default: { x: 7, y: 10 },
+        },
+        currentMap: {
+            type: String,
+            default: "tutorial",
+        },
         inventory: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Inventory',
