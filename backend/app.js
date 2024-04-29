@@ -25,6 +25,7 @@ const mobRouter = require('./routes/mobRoutes.js');
 const battleRouter = require('./routes/battleRoutes.js');
 const itemRouter = require('./routes/itemRoutes.js');
 const characterRouter = require('./routes/characterRoutes.js');
+const updateUserRouter = require('./routes/updateUserRoutes.js');
 const npcRouter = require('./routes/npcRoutes.js');
 const bookRouter = require('./routes/bookRoutes.js');
 const floraRouter = require('./routes/floraRoutes.js');
@@ -45,9 +46,9 @@ const seasonRouter = require('./routes/seasonRoutes.js');
 const weatherRouter = require('./routes/weatherRoutes.js');
 const templeRouter = require('./routes/templeRoutes.js');
 const sentientItemRouter = require('./routes/sentientItemRoutes.js');
-const resourceRouter = require('./routes/resourceRoutes.js')
-const artifactRouter = require('./routes/artifactRoutes.js')
-const religiouscovenantRouter = require('./routes/religiousCovenantRoutes.js')
+const resourceRouter = require('./routes/resourceRoutes.js');
+const artifactRouter = require('./routes/artifactRoutes.js');
+const religiouscovenantRouter = require('./routes/religiousCovenantRoutes.js');
 
 // Cybersecurity
 app.use(helmet());
@@ -63,7 +64,8 @@ app.use('/api/v1/user', authUserRouter);
 app.use('/api/v1/mob', mobRouter);
 app.use('/api/v1/battle', battleRouter);
 app.use('/api/v1/item', itemRouter);
-app.use('/api/v1/character', characterRouter)
+app.use('/api/v1/character', characterRouter);
+app.use('/api/v1/update-user', updateUserRouter);
 app.use('/api/v1/npc', npcRouter);
 app.use('/api/v1/flora', floraRouter);
 app.use('/api/v1/fauna', faunaRouter);

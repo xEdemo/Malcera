@@ -81,6 +81,23 @@ const userSlice = createSlice({
             };
             localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
         },
+        updateUserPosition: (state, action) => {
+            state.userInfo = {
+                ...state.userInfo,
+                position: {
+                    x: action.payload.x,
+                    y: action.payload.y,
+                },
+            };
+            localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
+        },
+        updateUserMap: (state, action) => {
+            state.userInfo = {
+                ...state.userInfo,
+                currentMap: action.payload,
+            };
+            localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
+        },
     },
 });
 
@@ -95,6 +112,8 @@ export const {
     updateHitpointsLvl,
     updateHitpointsXp,
     updateJossPaper,
+    updateUserPosition,
+    updateUserMap,
 } = userSlice.actions;
 
 export default userSlice.reducer;

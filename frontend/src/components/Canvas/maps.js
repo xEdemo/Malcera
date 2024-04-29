@@ -1,4 +1,4 @@
-export const tileWidth = 100, tileHeight = 100;
+export const tileWidth = 60, tileHeight = 60;
 export const gridRows = 20, gridColumns = 20;
 
 export const maps = {

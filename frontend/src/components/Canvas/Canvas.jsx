@@ -5,9 +5,12 @@ import {
 	useCallback,
 } from "react";
 import { maps, tileWidth, tileHeight, gridRows, gridColumns } from "./maps.js";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useUpdatePositionMutation } from "../../slices/updateUser/updateUserApiSlice.js";
+import { updateUserPosition, updateUserMap } from '../../slices/user/userSlice.js';
+import { toast } from "react-toastify";
 
-const playerRadius = 25;
+const playerRadius = 12.5;
 
 const duration = 20; // speed of player animation (every other frame)
 
@@ -15,6 +18,8 @@ let dt = 1;
 
 const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 	const canvasRef = useRef(null);
+
+	const dispatch = useDispatch();
 
 	const { userInfo } = useSelector((state) => state.auth);
 
@@ -37,6 +42,31 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		x: null,
 		y: null,
 	});
+
+	const [wsReadyState, setWsReadyState] = useState(0);
+
+	const [updatePositionMut] = useUpdatePositionMutation();
+
+	const updatePositionDB = async (x, y, map) => {
+		try {
+			const res = await updatePositionMut({
+				x,
+				y,
+				map,
+			});
+			if (res.data) {
+				dispatch(updateUserPosition({ x, y }));
+				if (map) {
+					dispatch(updateUserMap(map));
+				}
+			}
+			if (res.error && res.error.data && res.error.data.message) {
+				toast.error(res.error.data.message);
+			}
+		} catch (error) {
+			toast.error("Error updating user position.");
+		}
+	}
 
 	// Need to optimize this function so that it does not redraw all maps that any player may be at
 	// Ex: if a player is on limbo and if a player is on tutorial and the player moves on limbo, it will redraw the map for the player on tutorial 20 times
@@ -76,6 +106,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 					context.lineWidth = 1;
 					context.strokeRect(x, y, tileWidth, tileHeight);
 
+					// Draw individual tiles
 					if (tile === 1) {
 						context.fillStyle = "brown";
 						context.fillRect(x, y, tileWidth, tileHeight);
@@ -101,6 +132,14 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		}
 	};
 
+	const clearHoveredTile = (canvas) => {
+		hoveredTileRef.current = {
+			x: null,
+			y: null,
+		};
+		canvas.style.cursor = "default";
+	}
+
 	const handleMouseHover = (canvas, context, e) => {
 		const rect = canvas.getBoundingClientRect();
 		const x = e.clientX - rect.left;
@@ -125,14 +164,19 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 					x: tileX,
 					y: tileY,
 				};
+				canvas.style.cursor = "pointer";
 			}
 		} else {
-			hoveredTileRef.current = {
-				x: null,
-				y: null,
-			};
+			clearHoveredTile(canvas);
 		}
 	};
+
+	const handleTileClick = () => {
+        // You can do whatever you want here, such as logging a message to console
+		if (hoveredTileRef.current.x !== null && hoveredTileRef.current.y !== null) {
+			console.log("Clicked on highlighted tile at:", hoveredTileRef.current);
+		}
+    };
 
 	const drawOtherPlayers = (context, offsetX, offsetY) => {
 		//console.log("otherPlayer state in drawOtherPlayers:", otherPlayers);
@@ -206,6 +250,8 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 						if (progress >= 1) {
 							dt = 1;
 							isPlayerAnimatingRef.current = false;
+							//Update DB on completion
+							updatePositionDB(interpolatedX, interpolatedY, "");
 							//console.log(currentMapRef.current);
 						} else {
 							dt++;
@@ -222,12 +268,6 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 
 	const handleKeyDown = (e) => {
 		if (isPlayerAnimatingRef.current) return;
-
-		// Here to remove hover effect when moving
-		hoveredTileRef.current = {
-			x: null,
-			y: null,
-		};
 
 		let newX = playerPositionRef.current.x;
 		let newY = playerPositionRef.current.y;
@@ -250,6 +290,9 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 			default:
 				return;
 		}
+		if (preloadedMaps[currentMapRef.current][newY][newX]) {
+			clearHoveredTile(canvasRef.current);
+		}
 		// Check if the new position is valid (not a wall)
 		if (preloadedMaps[currentMapRef.current][newY][newX] === 1) {
 			newXRef.current = newX;
@@ -268,6 +311,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 					payload: { x: 18, y: 18, map: "limbo" },
 				})
 			);
+			updatePositionDB(18, 18, "limbo");
 			// Update position in database and map in database
 		} else if (preloadedMaps[currentMapRef.current][newY][newX] === 901) {
 			currentMapRef.current = "tutorial";
@@ -281,6 +325,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 					payload: { x: 1, y: 18, map: "tutorial" },
 				})
 			);
+			updatePositionDB(1, 18, "tutorial");
 			// Update position in database and map in database
 		} else {
 			// Play sounds or display a message
@@ -307,16 +352,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		ws.addEventListener("open", () => {
 			console.log("Canvas WebSocket connection opened");
 			// Loads in player initial position when they load in
-			ws.send(
-				JSON.stringify({
-					type: "playerMove",
-					payload: {
-						x: userInfo.position.x,
-						y: userInfo.position.y,
-						map: currentMapRef.current,
-					},
-				})
-			);
+			setRoo(1);
 		});
 
 		ws.addEventListener("message", (e) => {
@@ -325,6 +361,10 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 				otherPlayersRef.current = data.playerPositions;
 				//console.log(data.playerPositions);
 			}
+		});
+
+		ws.addEventListener("close", () => {
+			console.log("Canvas WebSocket connection closed");
 		});
 
 		return () => {
@@ -343,6 +383,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		canvas.addEventListener("mousemove", (e) =>
 			handleMouseHover(canvas, context, e)
 		);
+		canvas.addEventListener("click", handleTileClick);
 
 		resizeCanvas(canvas, context);
 
@@ -354,14 +395,37 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 			canvas.removeEventListener("mousemove", (e) =>
 				handleMouseHover(canvas, context, e)
 			);
+			canvas.removeEventListener("click", handleTileClick);
 		};
 		// Added preloadedMaps so that edge browser will render in the player
 	}, [isLeftSidebarOpen, isRightSidebarOpen, ws, preloadedMaps]);
 
 	// Only animates the game once ws is loaded
 	useEffect(() => {
-		animateGame(canvasRef.current, canvasRef.current.getContext("2d"));
+		if (ws) {
+			animateGame(canvasRef.current, canvasRef.current.getContext("2d"));
+			setTimeout(() => {
+				setWsReadyState(1);
+			}, 75)
+		}
 	}, [ws]);
+
+	// Temp fix to render the player and other players on refresh and on load (doesn't work with throttling)
+	useEffect(() => {
+		if (ws && ws.readyState === 1) {
+			ws.send(
+				JSON.stringify({
+					type: "playerMove",
+					payload: {
+						x: userInfo.position.x,
+						y: userInfo.position.y,
+						map: currentMapRef.current,
+					},
+				})
+			);
+		}
+	}, [wsReadyState]);
+
 
 	return (
 		<div style={{ padding: "10px" }}>

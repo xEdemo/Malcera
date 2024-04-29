@@ -69,8 +69,17 @@ const initWebSocket = (server) => {
 					);
 				}
 			});
+
+			connection.on("close", () => {
+				handlePlayerDisconnect(connection);
+			});
 		})
 	);
+
+	const handlePlayerDisconnect = (connection) => {
+        delete playerPositions[connection.users?._id];
+        handlePlayerPositions();
+    };
 
 	const handleIncomingMessage = (message, senderConnection) => {
 		if (message && message.globalMessage) {
@@ -93,7 +102,7 @@ const initWebSocket = (server) => {
 				id,
 				x,
 				y,
-                map,
+				map,
 			})
 		);
 
