@@ -9,12 +9,15 @@ import { useSelector, useDispatch } from "react-redux";
 import { useUpdatePositionMutation } from "../../slices/updateUser/updateUserApiSlice.js";
 import { updateUserPosition, updateUserMap } from '../../slices/user/userSlice.js';
 import { toast } from "react-toastify";
+import terrainss from "../../assets/sprites/terrain/terrainss.png";
 
-const playerRadius = 12.5;
+const playerRadius = 25;
 
-const duration = 20; // speed of player animation (every other frame)
+const duration = 20; // speed of player animation (frames)
 
-let dt = 1;
+let movementFrameCount = 1;
+
+const imageHeight = 100, imageWidth = 100;
 
 const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 	const canvasRef = useRef(null);
@@ -25,6 +28,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 
 	const currentMapRef = useRef(userInfo.currentMap);
 	const [preloadedMaps, setPreloadedMaps] = useState({});
+	const imageRef = useRef(null)
 
 	const playerPositionRef = useRef({
 		x: userInfo.position.x,
@@ -75,13 +79,13 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 			const preloaded = {};
 			for (const mapName of Object.keys(maps)) {
 				const map = maps[mapName];
-
-				// Will be useful for preloading images, for now this will just be a placeholder
-				//const preprocessedMap = preprocessMap(map);
-				//preloaded[mapName] = preprocessedMap;
-
 				preloaded[mapName] = map;
 			}
+
+			const img = new Image();
+			img.src = terrainss;
+			img.onload = () => imageRef.current = img;
+			
 			setPreloadedMaps(preloaded);
 		};
 
@@ -92,7 +96,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 
 	const drawMap = (context, offsetX, offsetY) => {
 		const map = preloadedMaps[currentMapRef.current];
-		if (map) {
+		if (map && imageRef.current) {
 			// console.log(map);
 			context.fillStyle = "black";
 			context.fillRect(0, 0, context.canvas.width, context.canvas.height);
@@ -108,8 +112,11 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 
 					// Draw individual tiles
 					if (tile === 1) {
-						context.fillStyle = "brown";
-						context.fillRect(x, y, tileWidth, tileHeight);
+						// context.fillStyle = "brown";
+						// context.fillRect(x, y, tileWidth, tileHeight);
+						context.drawImage(imageRef.current, imageWidth * 0, imageHeight * 0, imageWidth, imageHeight, x, y, tileWidth, tileHeight);
+					} else if (tile === 2) {
+						context.drawImage(imageRef.current, imageWidth * 1, imageHeight * 0, imageWidth, imageHeight, x, y, tileWidth, tileHeight)
 					} else if (tile === 900 || tile === 901) {
 						context.fillStyle = "black";
 						context.fillRect(x, y, tileWidth, tileHeight);
@@ -186,7 +193,11 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 				.forEach((player) => {
 					const x = player.x * tileWidth + offsetX;
 					const y = player.y * tileHeight + offsetY;
-					context.fillStyle = "blue";
+					if (player.id === userInfo._id) {
+						context.fillStyle = "blue";
+					} else {
+						context.fillStyle = "green";
+					}
 					context.beginPath();
 					context.arc(
 						x + tileWidth / 2,
@@ -222,7 +233,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 						t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
 					const updatePosition = () => {
-						const progress = Math.min(dt / duration, 1); // Ensure progress does not exceed 1
+						const progress = Math.min(movementFrameCount / duration, 1); // Ensure progress does not exceed 1
 
 						const easedProgress = easeInOutQuad(progress);
 
@@ -248,13 +259,13 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 						);
 
 						if (progress >= 1) {
-							dt = 1;
+							movementFrameCount = 1;
 							isPlayerAnimatingRef.current = false;
 							//Update DB on completion
 							updatePositionDB(interpolatedX, interpolatedY, "");
 							//console.log(currentMapRef.current);
 						} else {
-							dt++;
+							movementFrameCount++;
 							//console.log(progress);
 						}
 					};
@@ -294,7 +305,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 			clearHoveredTile(canvasRef.current);
 		}
 		// Check if the new position is valid (not a wall)
-		if (preloadedMaps[currentMapRef.current][newY][newX] === 1) {
+		if (preloadedMaps[currentMapRef.current][newY][newX] >= 1 && preloadedMaps[currentMapRef.current][newY][newX] < 900) {
 			newXRef.current = newX;
 			newYRef.current = newY;
 			//animatePlayer(newX, newY);
@@ -352,7 +363,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen }) => {
 		ws.addEventListener("open", () => {
 			console.log("Canvas WebSocket connection opened");
 			// Loads in player initial position when they load in
-			setRoo(1);
+			//setRoo(1);
 		});
 
 		ws.addEventListener("message", (e) => {
