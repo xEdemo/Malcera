@@ -45,7 +45,7 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 	};
 
 	const renderEquipmentSlot = (slotId) => {
-		const item = character.equipment?.[slotId];
+		const item = character?.equipment?.[slotId];
 		const isEmptySlot = item?.name === "Empty Slot";
 
 		let slotComponent;

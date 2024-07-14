@@ -8,9 +8,13 @@ const {
 } = require("../middleware/authMiddleware.js");
 
 const {
-	userPosition
+	userPosition,
+	getUserPosition,
 } = require("../controllers/updateUserController.js");
 
-router.route("/position").put([protect], userPosition);
+router
+	.route("/position")
+	.put([protect], userPosition)
+	.get([protect], getUserPosition);
 
 module.exports = router;

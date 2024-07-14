@@ -80,7 +80,9 @@ const LeftSidebar = () => {
     const fetchCharacterData = async () => {
         try {
             const res = await dispatch(getCharacter());
-            setCharacter(res.payload.character);
+            if (res.payload) {
+                setCharacter(res.payload.character);
+            }
         } catch (error) {
             console.error("Error fetching character.", error);
         }

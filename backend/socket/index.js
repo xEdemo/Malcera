@@ -56,8 +56,8 @@ const initWebSocket = (server) => {
 
 					if (parsedMessage.type === "playerMove") {
 						// Handle player movement
-						const { x, y, map } = parsedMessage.payload;
-						updatePlayerPosition(connection, x, y, map);
+						const { x, y, z, map } = parsedMessage.payload;
+						updatePlayerPosition(connection, x, y, z, map);
 					} else {
 						// Handle other types of messages
 						handleIncomingMessage(parsedMessage, connection);
@@ -98,10 +98,11 @@ const initWebSocket = (server) => {
 
 	const handlePlayerPositions = () => {
 		const positions = Object.entries(playerPositions).map(
-			([id, { x, y, map }]) => ({
+			([id, { x, y, z, map }]) => ({
 				id,
 				x,
 				y,
+				z,
 				map,
 			})
 		);
@@ -111,8 +112,8 @@ const initWebSocket = (server) => {
 		});
 	};
 
-	const updatePlayerPosition = (connection, newX, newY, map) => {
-		playerPositions[connection.users?._id] = { x: newX, y: newY, map };
+	const updatePlayerPosition = (connection, newX, newY, newZ, map) => {
+		playerPositions[connection.users?._id] = { x: newX, y: newY, z: newZ, map };
 		handlePlayerPositions();
 	};
 };
