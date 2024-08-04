@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '../../slices/auth/userApiSlice.js';
 import { clearCredentials } from '../../slices/auth/authSlice.js';
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
+import { getUserInfo } from '../../slices/auth/authSlice.js';
+import { Loading } from '../'
 import Select from 'react-select';
 import { toast } from 'react-toastify';
 
@@ -18,10 +20,28 @@ const Navbar = () => {
     const [isMenuClicked, setIsMenuClicked] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null);
 
-    const { userInfo } = useSelector((state) => state.auth);
-
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const [userData, setUserData] = useState();
+	const [isLoading, setIsLoading] = useState(true);
+
+    const fetchUserData = async () => {
+		try {
+			const res = await dispatch(getUserInfo());
+			if (res.payload && res.payload.user) {
+				setUserData(res.payload.user);
+			}
+		} catch (error) {
+			console.error("Error fetching user data", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+    useEffect(() => {
+		fetchUserData();
+	}, []);
 
     const [logout] = useLogoutMutation();
 
@@ -35,10 +55,7 @@ const Navbar = () => {
             await logout().unwrap();
             dispatch(clearCredentials());
             navigate('/');
-            toast.success('You have successfully logged out.');
-            setTimeout(() => {
-                window.location.reload();
-            }, 800);
+            window.location.reload();
         } catch (err) {
             toast.error(err?.data?.message || err.error);
         }
@@ -96,6 +113,10 @@ const Navbar = () => {
         }),
     };
 
+    if (isLoading) {
+        return <Loading />
+    }
+
     return (
         <header>
             <nav className="nav-header">
@@ -141,7 +162,7 @@ const Navbar = () => {
                         </Link>
                     </li>
                 </ul>
-                {userInfo ? (
+                {userData ? (
                     <ul className="right-nav-container">
                         <li>
                             <Link className="box-nav-play-button" to="/game">
@@ -159,7 +180,7 @@ const Navbar = () => {
                                 options={options}
                                 onChange={handleOptionChange}
                                 styles={customStyles}
-                                placeholder={`Hello ${userInfo.username}`}
+                                placeholder={`Hello ${userData.username}`}
                                 aria-label="Account Options"
                             />
                         </li>
@@ -231,7 +252,7 @@ const Navbar = () => {
                             <h2>Manual</h2>
                         </Link>
                     </li>
-                    {userInfo ? (
+                    {userData ? (
                         <>
                             <li>
                                 <Link to="/profile">

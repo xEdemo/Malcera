@@ -28,3 +28,7 @@
 	left: 1px;
 	top: 33px;
 }
+
+.inventory-slot.drag-over {
+	border: 2.5px solid goldenrod;
+}

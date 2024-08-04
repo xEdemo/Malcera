@@ -29,10 +29,7 @@ const LoginForm = () => {
             const res = await login({ email, password }).unwrap();
             dispatch(setCredentials({ ...res }));
             navigate('/');
-            toast.success('Login successful!');
-            setTimeout(() => {
-                window.location.reload();
-            }, 800);
+            window.location.reload();
         } catch (err) {
             toast.error(err?.data?.message || err.error);
         }

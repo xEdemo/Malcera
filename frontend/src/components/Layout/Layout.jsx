@@ -1,20 +1,56 @@
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
 	ChatBox,
 	GameHeader,
 	LeftSidebar,
 	RightSidebar,
 	Canvas,
+	DevCanvas,
 } from "../index.jsx";
+import { getUserInfo } from "../../slices/auth/authSlice.js";
+import { Loading } from '../'
 
 const Layout = () => {
+	const dispatch = useDispatch();
+
+	const [userData, setUserData] = useState();
+	const [isLoading, setIsLoading] = useState(true);
+
+	const fetchUserData = async () => {
+		try {
+			const res = await dispatch(getUserInfo());
+			if (res.payload && res.payload.user) {
+				setUserData(res.payload.user);
+			}
+		} catch (error) {
+			console.error("Error fetching user data", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const refetchUserData = () => {
+		fetchUserData();
+	};
+
+	useEffect(() => {
+		fetchUserData();
+	}, []);
+
 	const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(
 		JSON.parse(localStorage.getItem("IS_LEFT_SIDEBAR_OPEN")) || false
 	);
 	const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(
 		JSON.parse(localStorage.getItem("IS_RIGHT_SIDEBAR_OPEN")) || false
 	);
+
+	const [isDev, setIsDev] = useState(false);
+
+	if (isLoading) {
+		return <Loading />
+	}
 
 	return (
 		<div
@@ -44,10 +80,22 @@ const Layout = () => {
 						setIsLeftSidebarOpen={setIsLeftSidebarOpen}
 						isRightSidebarOpen={isRightSidebarOpen}
 						setIsRightSidebarOpen={setIsRightSidebarOpen}
+						isDev={isDev}
+						setIsDev={setIsDev}
+						userData={userData}
 					/>
 					{/* <Outlet /> */}
-					<Canvas isLeftSidebarOpen={isLeftSidebarOpen} isRightSidebarOpen={isRightSidebarOpen} />
-					<ChatBox />
+					{isDev && userData.role === "superAdmin" ? (
+						<DevCanvas userData={userData} />
+					) : (
+						<Canvas
+							isLeftSidebarOpen={isLeftSidebarOpen}
+							isRightSidebarOpen={isRightSidebarOpen}
+							userData={userData}
+							refetchUserData={refetchUserData}
+						/>
+					)}
+					<ChatBox userData={userData} />
 				</div>
 				<div
 					className={

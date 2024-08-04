@@ -1,7 +1,7 @@
 import { useEffect, useRef, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import {
     sidebarReducer,
 } from '../../reducers/LeftSiderbarReducer.js';
@@ -35,8 +35,6 @@ const LeftSidebar = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const { userInfo } = useSelector((state) => state.user);
 
     const handleToggleInventory = async () => {
         dispatchSidebar({ type: 'TOGGLE_INVENTORY' });

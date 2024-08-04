@@ -216,8 +216,8 @@ const authUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
-        const inventory = await Inventory.findOne({ _id: user.inventory });
-        const character = await Character.findOne({ _id: user.character });
+        // const inventory = await Inventory.findOne({ _id: user.inventory });
+        // const character = await Character.findOne({ _id: user.character });
         
         createJWT(res, user._id);
 
@@ -226,26 +226,26 @@ const authUser = asyncHandler(async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            banned: user.banned,
-            mobKills: user.mobKills,
-            attackLvl: user.attackLvl,
-            attackXp: user.attackXp,
-            defenseLvl: user.defenseLvl,
-            defenseXp: user.defenseXp,
-            strengthLvl: user.strengthLvl,
-            strengthXp: user.strengthXp,
-            hitpointsLvl: user.hitpointsLvl,
-            hitpointsXp: user.hitpointsXp,
-            healthPool: user.healthPool,
-            weaponPower: user.weaponPower,
-            armourRating: user.armourRating,
-            jossPaper: user.jossPaper,
-            actionStatus: user.actionStatus,
-            role: user.role,
-            position: user.position,
-            currentMap: user.currentMap,
-            inventory,
-            character,
+            // banned: user.banned,
+            // mobKills: user.mobKills,
+            // attackLvl: user.attackLvl,
+            // attackXp: user.attackXp,
+            // defenseLvl: user.defenseLvl,
+            // defenseXp: user.defenseXp,
+            // strengthLvl: user.strengthLvl,
+            // strengthXp: user.strengthXp,
+            // hitpointsLvl: user.hitpointsLvl,
+            // hitpointsXp: user.hitpointsXp,
+            // healthPool: user.healthPool,
+            // weaponPower: user.weaponPower,
+            // armourRating: user.armourRating,
+            // jossPaper: user.jossPaper,
+            // actionStatus: user.actionStatus,
+            // role: user.role,
+            // position: user.position,
+            // currentMap: user.currentMap,
+            // inventory,
+            // character,
         });
     } else {
         res.status(StatusCodes.UNAUTHORIZED);
@@ -268,12 +268,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 // route    Get /api/v1/user/profile
 // @access  Private
 const getUser = asyncHandler(async (req, res) => {
-    const user = {
-        _id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-    };
-    res.status(StatusCodes.OK).json(user);
+    const user = await User.findById(req.user._id).select('-__v -password');
+
+    res.status(StatusCodes.OK).json({ user });
 });
 
 // @desc    Update user profile

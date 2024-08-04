@@ -7,7 +7,7 @@ const initialState = {
 };
 
 const userSlice = createSlice({
-    name: 'user',
+    name: 'User',
     initialState,
     reducers: {
         updateHealthPool: (state, action) => {

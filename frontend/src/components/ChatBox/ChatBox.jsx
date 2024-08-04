@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useLayoutEffect, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ChatBoxContextMenu, useChatBoxContextMenu } from '../../components';
 import { toast } from 'react-toastify';
 import { Cog6ToothIcon as OutlineCog6ToothIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 
-const ChatBox = () => {
+const ChatBox = ({ userData }) => {
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState([]);
 
@@ -41,8 +41,6 @@ const ChatBox = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const { userInfo } = useSelector((state) => state.user);
 
     const toggleOptionsMenu = () => {
         setShowOptionsMenu(!showOptionsMenu);
@@ -141,8 +139,8 @@ const ChatBox = () => {
                     .slice(0, 8);
 
                 const globalMessage = {
-                    badge: userInfo.role,
-                    sender: userInfo.username,
+                    badge: userData.role,
+                    sender: userData.username,
                     content: inputValue,
                     timestamp: utcTimeString,
                 };
@@ -327,7 +325,7 @@ const ChatBox = () => {
                                     <option>Green</option>
                                     <option>Purple</option>
                                     <option>Red</option>
-                                    {userInfo?.role !== 'user' && (
+                                    {userData.role !== 'user' && (
                                         <>
                                             <option>Gradient</option>
                                             <option>Transparent</option>
@@ -411,7 +409,7 @@ const ChatBox = () => {
                             // this can be done with css as well
                             style={{
                                 backgroundColor:
-                                    index % 2 === 0 ? '#0a0a0a' : 'transparent',
+                                    index % 2 === 0 ? '#0a0a0a58' : 'transparent',
                             }}
                         >
                             {message.content && (
@@ -463,23 +461,23 @@ const ChatBox = () => {
                 </div>
 
                 <div className="chat-box-input-container">
-                    {userInfo?.role === 
+                    {userData.role === 
                         'forumMod' && (
                         <StarIcon className="chat-box-badges forum-mod-badge" title='Forum Moderator' />
                     )}{' '}
-                    {userInfo?.role === 
+                    {userData.role === 
                         'playerMod' && (
                             <StarIcon className="chat-box-badges player-mod-badge" title='Player Moderator' />
                     )}{' '}
-                    {userInfo?.role === 
+                    {userData.role === 
                         'admin' && (
                             <StarIcon className="chat-box-badges admin-badge" title='Administrator' />
                     )}{' '}
-                    {userInfo?.role === 
+                    {userData.role === 
                         'superAdmin' && (
                             <StarIcon className="chat-box-badges super-admin-badge" title='God' />
                     )}{' '}
-                    <b>{userInfo?.username}:</b>
+                    <b>{userData.username}:</b>
                     <div className="chat-box-input-region">
                         <input
                             type="text"

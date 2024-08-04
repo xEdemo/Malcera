@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import {
 	useSplitStackMutation,
 	useRemoveItemMutation,
@@ -18,6 +18,9 @@ const InventoryContextMenu = ({
 	rerenderCharacter,
 }) => {
 	const { x, y } = contextMenu;
+
+	const initialY = useRef(y);
+    const initialScrollY = useRef(scrollY);
 
 	const [splitAmount, setSplitAmount] = useState(1);
 	const [isSplitting, setIsSplitting] = useState(false);
@@ -100,13 +103,20 @@ const InventoryContextMenu = ({
 		setSplitAmount(Math.floor(checkOriginalQuantity / 2));
 	}, [checkOriginalQuantity]);
 
+	useEffect(() => {
+        if (contextMenu.show) {
+            initialY.current = y;
+            initialScrollY.current = scrollY;
+        }
+    }, [contextMenu.show, y]);
+
 	return (
 		<>
 			{contextMenu.show && (
 				<div
 					className="context-menu-main"
 					style={{
-						top: `${scrollY + y}px`,
+						top: `${initialY.current - (scrollY - initialScrollY.current)}px`,
 						left: `${x}px`,
 					}}
 				>
