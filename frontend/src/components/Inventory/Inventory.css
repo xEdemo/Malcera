@@ -27,6 +27,7 @@
 	color: goldenrod;
 	left: 1px;
 	top: 33px;
+	user-select: none;
 }
 
 .inventory-slot.drag-over {

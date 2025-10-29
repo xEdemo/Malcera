@@ -1,0 +1,58 @@
+/* container */
+.user-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+/* trigger */
+.user-dropdown-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.45rem 0.7rem;
+
+	color: var(--theme-grey-100, #dfdfdf);
+	cursor: pointer;
+}
+.user-dropdown-trigger:focus-visible {
+	outline: 2px solid #888;
+	outline-offset: 2px;
+}
+.user-dropdown-trigger:hover {
+	animation: glowing 5s ease-in-out infinite;
+}
+
+/* menu */
+.user-dropdown-menu {
+	position: absolute;
+	right: 0; /* anchor to right edge of trigger */
+	top: calc(100% + 8px);
+	min-width: 180px;
+	padding: 6px;
+	background: var(--panel, #111);
+	border: 1px solid var(--border, #333);
+	border-radius: 10px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+	z-index: 1000;
+}
+
+/* items */
+.user-dropdown-item {
+	width: 100%;
+	text-align: left;
+	padding: 0.6rem 0.75rem;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--fg, #f1f1f1);
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+}
+.user-dropdown-item:hover,
+.user-dropdown-item.is-active,
+.user-dropdown-item:focus {
+	background: rgba(255, 255, 255, 0.08);
+	outline: none;
+}

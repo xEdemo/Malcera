@@ -3,7 +3,9 @@ import { Loading } from './components';
 import { Outlet } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
+
 import './index.css';
+
 import './components/Loading/Loading.css';
 import './components/Navbar/Navbar.css';
 import './components/Footer/Footer.css';
@@ -15,11 +17,14 @@ import './components/Inventory/Inventory.css';
 import './components/Character/Character.css';
 import './components/LeftSidebar/LeftSidebar.css';
 import './components/RightSidebar/RightSidebar.css';
+import './components/ChatBox/ChatBox.css';
+import './components/Dropdown/Dropdown.css';
+import './components/Navbar/LeaderboardsMegaMenu.css';
+
 import './pages/Landing/Landing.css';
 import './pages/NotFound/NotFound.css';
 import './pages/Login/LoginForm.css';
 import './pages/SignUp/SignUpForm.css';
-import './components/ChatBox/ChatBox.css'
 
 function App() {
     return (

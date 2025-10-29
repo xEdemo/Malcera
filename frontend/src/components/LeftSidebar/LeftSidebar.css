@@ -6,11 +6,12 @@
     gap: 0.5rem;
 }
 
-.left-sidebar-content-container p {
+.left-sidebar-content-container > p {
     display: block;
     width: 100%;
     text-align: center;
     cursor: pointer;
+    user-select: none;
 }
 
 .chevron-down-sidebar,

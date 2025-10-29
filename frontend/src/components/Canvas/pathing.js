@@ -61,6 +61,7 @@ export const findPath = (start, goal, map) => {
 		[-1, 0],
 	];
 
+	// Manhattan Distance
 	const heuristic = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 
 	const isValidTile = (x, y, currentZ) =>

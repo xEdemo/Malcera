@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -49,14 +48,14 @@ const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrol
         setDragOverIndex(index);
     };
 
+	const handleDragEnd = (e) => {
+        setDragOverIndex(null);
+    };
+
 	const handleDrop = async (index, e) => {
         e.preventDefault();
 
-        if (draggedItemIndex === null) {
-			setDraggedItemIndex(null);
-        	setDragOverIndex(null);
-			return;
-		}
+        if (draggedItemIndex === null) return;
 
         const updatedItems = [...inventoryItems];
         const draggedItem = updatedItems[draggedItemIndex];
@@ -163,6 +162,7 @@ const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrol
                         	}`}
 							onDragOver={(e) => handleDragOver(index, e)}
                         	onDrop={(e) => handleDrop(index, e)}
+							onDragEnd={(e) => handleDragEnd(e)}
 						>
 							{inventoryItem?.name !== "Empty Slot" && (
 								<>

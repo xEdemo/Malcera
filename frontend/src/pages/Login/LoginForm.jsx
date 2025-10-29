@@ -19,7 +19,7 @@ const LoginForm = () => {
 
     useEffect(() => {
         if (userInfo) {
-            navigate('/');
+            navigate('/', { replace: true });
         }
     }, [navigate, userInfo]);
 

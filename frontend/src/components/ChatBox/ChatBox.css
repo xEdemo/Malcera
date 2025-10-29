@@ -75,7 +75,7 @@
     max-width: 88%; /* Adjust the max-width as needed */
     margin-right: auto; /* Push the tabs to the left */
     padding: 2px;
-    margin-left: 4px;
+    margin-left: 6px;
 }
 
 .chat-box-tabs::-webkit-scrollbar {
@@ -216,7 +216,6 @@
     width: 1.2rem;
     height: 1.2rem;
     vertical-align: middle;
-    margin-bottom: 2.5px;
 }
 
 .chat-box-badges.forum-mod-badge {

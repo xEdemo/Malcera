@@ -1,44 +1,49 @@
 .homepage-main-container {
-    background-image: url(../../images/DVinfernoForestOfSuicides_m.jpg);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    height: 130vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+	background-image: linear-gradient(
+			to right,
+			rgba(0, 0, 0, 1),
+			rgba(0, 0, 0, 0.4)
+		),
+		url(../../assets/landing/DVinfernoForestOfSuicides_m.jpg);
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 }
 
 .homepage-tab-container {
-    margin-top: 5rem;
-    height: 8rem;
-    width: 50rem;
-    background-color: var(--theme-background-o-main);
-    border-top-right-radius: 3rem;
-    border-top-left-radius: 3rem;
-    display: flex;
-    justify-content: center;
+	margin-top: 5rem;
+	height: 8rem;
+	width: 50rem;
+	background-color: var(--theme-background-o-main);
+	border-top-right-radius: 3rem;
+	border-top-left-radius: 3rem;
+	display: flex;
+	justify-content: center;
 }
 
 .homepage-tab-container h5 {
-    display: flex;
-    align-items: center;
-    padding: 0 1rem;
-    height: 100%;
-    cursor: pointer;
-    text-decoration-line: none; /* Start with no underline */
-    text-decoration-color: transparent; /* Start with transparent color */
-    transition: text-decoration-line 0.5s, text-decoration-color 0.5s;
+	display: flex;
+	align-items: center;
+	padding: 0 1rem;
+	height: 100%;
+	cursor: pointer;
+	text-decoration-line: none; /* Start with no underline */
+	text-decoration-color: transparent; /* Start with transparent color */
+	transition: text-decoration-line 0.5s, text-decoration-color 0.5s;
 }
 
 .homepage-tab-container h5:hover {
-    text-decoration: underline;
-    text-decoration-color: var(--theme-grey-o-400);
+	text-decoration: underline;
+	text-decoration-color: var(--theme-grey-o-400);
 }
 
 .active-tab {
-    animation: glowing 5s ease-in-out infinite;
+	animation: glowing 5s ease-in-out infinite;
 }
 
 /* .homepage-tab-container h5:first-child,
@@ -48,58 +53,58 @@
 } */
 
 .homepage-content-container {
-    width: 120rem;
-    height: 100%;
-    max-height: 90rem;
-    background-color: var(--theme-background-o-main);
-    margin-bottom: 5rem;
-    border-radius: 2rem;
+	width: 120rem;
+	height: 100%;
+	max-height: 90rem;
+	background-color: var(--theme-background-o-main);
+	margin-bottom: 5rem;
+	border-radius: 2rem;
 }
 
 .homepage-content-box {
-    height: 91%;
-    margin: 4rem;
-    overflow: auto;
+	height: 91%;
+	margin: 4rem;
+	overflow: auto;
 }
 
 @media only screen and (max-width: 1200px) {
-    .homepage-content-container {
-        width: 90rem;
-    }
-    .homepage-tab-container {
-        margin-top: 10rem;
-    }
+	.homepage-content-container {
+		width: 90rem;
+	}
+	.homepage-tab-container {
+		margin-top: 10rem;
+	}
 }
 
 @media only screen and (max-width: 900px) {
-    .homepage-content-container {
-        width: 60rem;
-    }
+	.homepage-content-container {
+		width: 60rem;
+	}
 }
 
 @media only screen and (max-width: 600px) {
-    .homepage-content-container {
-        width: 40rem;
-        border-radius: 0rem;
-        border-bottom-right-radius: 2rem;
-        border-bottom-left-radius: 2rem;
-    }
-    .homepage-tab-container {
-        width: 40rem;
-    }
+	.homepage-content-container {
+		width: 40rem;
+		border-radius: 0rem;
+		border-bottom-right-radius: 2rem;
+		border-bottom-left-radius: 2rem;
+	}
+	.homepage-tab-container {
+		width: 40rem;
+	}
 }
 
 @media only screen and (max-width: 400px) {
-    .homepage-content-container {
-        width: 35rem;
-    }
-    .homepage-tab-container {
-        width: 35rem;
-    }
+	.homepage-content-container {
+		width: 35rem;
+	}
+	.homepage-tab-container {
+		width: 35rem;
+	}
 }
 
 @media only screen and (max-width: 950px) and (orientation: landscape) {
-    .homepage-tab-container {
-        margin-top: 10rem;
-    }
+	.homepage-tab-container {
+		margin-top: 10rem;
+	}
 }

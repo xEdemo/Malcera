@@ -5,10 +5,11 @@
     left: 1rem;
     right: 1rem;
     top: 1rem;
-    background-color: var(--theme-background-o-main);
+    background-color: transparent;
     border-radius: 1rem;
     z-index: 1;
     max-height: 8rem;
+    user-select: none;
 }
 
 .nav-header ul li a {
@@ -19,39 +20,36 @@
     margin-right: 0.5rem;
 }
 
-.left-nav-container,
+.middle-nav-container,
 .right-nav-container {
     display: flex;
     gap: 3rem;
     align-items: center;
 }
 
-.left-nav-container {
-    margin-left: 2rem;
+.middle-nav-container {
+    color: var(--theme-grey-200);
 }
 
 .right-nav-container {
-    margin-right: 2rem;
+    color: var(--theme-grey-100);
 }
 
-.box-nav-button,
-.box-nav-play-button {
+.box-nav-button {
     display: block;
     padding: 10px 8px;
     border-radius: 10px;
-    background-color: var(--theme-blue-500);
     transition: 0.5s;
 }
 
-.box-nav-button:hover,
-.box-nav-play-button:hover {
-    background-color: var(--theme-blue-400);
-    color: var(--theme-grey-o-100)
+
+.box-nav-button:hover {
+    color: var(--theme-grey-o-100);
+    animation: glowing 5s ease-in-out infinite;
 }
 
 .user-nav-dropdown {
     width: 17.5rem;
-    font-size: 1.4rem;
 }
 
 .burger-menu {
@@ -80,11 +78,11 @@
         border-radius: 0rem;
     }
 
-    .left-nav-container {
+    .middle-nav-container {
         margin-left: 1rem;
     }
 
-    .left-nav-container,
+    .middle-nav-container,
     .right-nav-container {
         gap: 1.4rem;
     }

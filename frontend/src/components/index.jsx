@@ -15,6 +15,8 @@ import Inventory from './Inventory/Inventory.jsx';
 import Character from './Character/Character.jsx';
 import Canvas from './Canvas/Canvas.jsx';
 import DevCanvas from './Canvas/DevCanvas.jsx';
+import Dropdown from './Dropdown/Dropdown.jsx';
+import LeaderboardsMegaMenu from './Navbar/LeaderboardsMegaMenu.jsx';
 
 export {
     Footer,
@@ -33,5 +35,7 @@ export {
     Inventory,
     Character,
     Canvas,
-    DevCanvas
+    DevCanvas,
+    Dropdown,
+    LeaderboardsMegaMenu,
 };

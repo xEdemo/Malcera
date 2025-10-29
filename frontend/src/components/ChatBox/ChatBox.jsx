@@ -96,7 +96,7 @@ const ChatBox = ({ userData }) => {
         // Only show one user per unique user id
         const users = {};
         usersArray.forEach(({ user }) => {
-            users[user._id] = user.username;
+            users[user?._id] = user?.username;
             //console.log(user);
         });
         console.log(users);
