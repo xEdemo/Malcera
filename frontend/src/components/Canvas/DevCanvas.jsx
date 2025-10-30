@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import * as THREE from 'three';
 
 const DevCanvas = ({ userData }) => {
+	const [selectedMap, setSelectedMap] = useState("tutorial");
 	return (
 		<div style={{ padding: "10px" }}>
 			<Canvas
@@ -26,7 +27,7 @@ const DevCanvas = ({ userData }) => {
 				/>
 				<ambientLight intensity={0.4} />
 				<pointLight castShadow intensity={100} position={[0, -10, 10]} />
-				{maps[userData.currentMap].map((row, rowIndex) =>
+				{maps[selectedMap].map((row, rowIndex) =>
 					row.map((tile, colIndex) => (
 						<Tile
 							key={`${rowIndex}-${colIndex}`}
@@ -180,15 +181,15 @@ const Tile = ({ position, color, userData }) => {
 		e.stopPropagation();
 		if (
 			isWalkable(
-				userData.position.x,
-				userData.position.y,
-				maps[userData.currentMap][userData.position.y][
-					userData.position.x
+				userData.world.position.x,
+				userData.world.position.y,
+				maps[userData.world.currentMap][userData.world.position.y][
+					userData.world.position.x
 				].z,
 				position[0],
 				Math.abs(position[1]),
 				position[2],
-				maps[userData.currentMap]
+				maps[userData.world.currentMap]
 			)
 		) {
 			setIsTileHovered(true);
@@ -199,15 +200,15 @@ const Tile = ({ position, color, userData }) => {
 		e.stopPropagation();
 		if (
 			isWalkable(
-				userData.position.x,
-				userData.position.y,
-				maps[userData.currentMap][userData.position.y][
-					userData.position.x
+				userData.world.position.x,
+				userData.world.position.y,
+				maps[userData.world.currentMap][userData.world.position.y][
+					userData.world.position.x
 				].z,
 				position[0],
 				Math.abs(position[1]),
 				position[2],
-				maps[userData.currentMap]
+				maps[userData.world.currentMap]
 			)
 		) {
 			setIsTileClicked(true);

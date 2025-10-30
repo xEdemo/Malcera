@@ -54,7 +54,7 @@ const GameHeader = ({
 						/>
 					)}
 				</div>
-				{userData.role === "superAdmin" && (
+				{userData.account.role === "superAdmin" && (
 					<div
 						style={{
 							marginTop: "1rem",

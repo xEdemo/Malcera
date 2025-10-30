@@ -85,7 +85,7 @@ const Layout = () => {
 						userData={userData}
 					/>
 					{/* <Outlet /> */}
-					{isDev && userData.role === "superAdmin" ? (
+					{isDev && userData.account.role === "superAdmin" ? (
 						<DevCanvas userData={userData} />
 					) : (
 						<Canvas

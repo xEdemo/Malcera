@@ -139,8 +139,8 @@ const ChatBox = ({ userData }) => {
                     .slice(0, 8);
 
                 const globalMessage = {
-                    badge: userData.role,
-                    sender: userData.username,
+                    badge: userData.account.role,
+                    sender: userData.account.username,
                     content: inputValue,
                     timestamp: utcTimeString,
                 };
@@ -325,7 +325,7 @@ const ChatBox = ({ userData }) => {
                                     <option>Green</option>
                                     <option>Purple</option>
                                     <option>Red</option>
-                                    {userData.role !== 'user' && (
+                                    {userData.account.role !== 'user' && (
                                         <>
                                             <option>Gradient</option>
                                             <option>Transparent</option>
@@ -461,23 +461,23 @@ const ChatBox = ({ userData }) => {
                 </div>
 
                 <div className="chat-box-input-container">
-                    {userData.role === 
+                    {userData.account.role === 
                         'forumMod' && (
                         <StarIcon className="chat-box-badges forum-mod-badge" title='Forum Moderator' />
                     )}{' '}
-                    {userData.role === 
+                    {userData.account.role === 
                         'playerMod' && (
                             <StarIcon className="chat-box-badges player-mod-badge" title='Player Moderator' />
                     )}{' '}
-                    {userData.role === 
+                    {userData.account.role === 
                         'admin' && (
                             <StarIcon className="chat-box-badges admin-badge" title='Administrator' />
                     )}{' '}
-                    {userData.role === 
+                    {userData.account.role === 
                         'superAdmin' && (
                             <StarIcon className="chat-box-badges super-admin-badge" title='God' />
                     )}{' '}
-                    <b>{userData.username}:</b>
+                    <b>{userData.account.username}:</b>
                     <div className="chat-box-input-region">
                         <input
                             type="text"

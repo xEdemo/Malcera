@@ -8,8 +8,6 @@ const protect = asyncHandler(async (req, res, next) => {
 
     const token = req.cookies.jwt;
 
-    //console.log(token);
-
     if (token) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -28,7 +26,7 @@ const protect = asyncHandler(async (req, res, next) => {
 });
 
 const admin = (req, res, next) => {
-    if (req.user.role !== 'admin' && req.user.role !== 'superAdmin') {
+    if (req.user.account.role !== 'admin' && req.user.account.role !== 'superAdmin') {
         res.status(StatusCodes.UNAUTHORIZED);
         throw new Error("You're unauthorized to access this route");
     }
@@ -36,8 +34,8 @@ const admin = (req, res, next) => {
 };
 
 const superAdmin = (req, res, next) => {
-    console.log(req.user.role);
-    if (req.user.role !== 'superAdmin') {
+    console.log(req.user.account.role);
+    if (req.user.account.role !== 'superAdmin') {
         res.status(StatusCodes.UNAUTHORIZED);
         throw new Error("You're unauthorized to access this route");
     }

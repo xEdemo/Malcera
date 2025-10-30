@@ -33,11 +33,11 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 
 	const [shouldRenderCanvas, setShouldRenderCanvas] = useState(true);
 
-	const [currentMap, setCurrentMap] = useState(userData.currentMap);
+	const [currentMap, setCurrentMap] = useState(userData.world.currentMap);
 	const [playerPosition, setPlayerPosition] = useState({
-		x: userData.position.x,
-		y: userData.position.y,
-		z: maps[userData.currentMap][userData.position.y][userData.position.x]
+		x: userData.world.position.x,
+		y: userData.world.position.y,
+		z: maps[userData.world.currentMap][userData.world.position.y][userData.world.position.x]
 			.z,
 	});
 
@@ -95,7 +95,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 				setPlayerPosition({
 					x: res.payload.x,
 					y: res.payload.y,
-					z: maps[userData.currentMap][res.payload.y][res.payload.x]
+					z: maps[userData.world.currentMap][res.payload.y][res.payload.x]
 						.z,
 				});
 			}
@@ -191,10 +191,10 @@ const Tile = ({ position, color, currentMap, userData }) => {
 		e.stopPropagation();
 		if (
 			isWalkable(
-				userData.position.x,
-				userData.position.y,
-				maps[currentMap][userData.position.y][
-					userData.position.x
+				userData.world.position.x,
+				userData.world.position.y,
+				maps[currentMap][userData.world.position.y][
+					userData.world.position.x
 				].z,
 				position[0],
 				Math.abs(position[1]),
@@ -208,7 +208,7 @@ const Tile = ({ position, color, currentMap, userData }) => {
 
 	const handlePointerDown = (e) => {
 		e.stopPropagation();
-		const start = [userData.position.x, userData.position.y, maps[currentMap][userData.position.y][userData.position.x].z];
+		const start = [userData.world.position.x, userData.world.position.y, maps[currentMap][userData.world.position.y][userData.world.position.x].z];
 		const goal = [position[0], Math.abs(position[1]), position[2]];
 		const shortestPath = findPath(start, goal, maps[currentMap]);
 		if (shortestPath.length > 0) {

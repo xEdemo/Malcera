@@ -109,7 +109,7 @@ const Navbar = () => {
 						<li className="user-nav-dropdown" role="navigation">
 							<div>
 								<Dropdown
-									placeholder={userData.username}
+									placeholder={userData.account.username}
 									options={options}
 									onAction={handleOptionChange}
 								/>

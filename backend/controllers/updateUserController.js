@@ -22,8 +22,8 @@ const userPosition = async (req, res) => {
 		throw new Error(`No user found with id ${userId}.`);
 	}
 
-	user.position.x = x;
-	user.position.y = y;
+	user.world.position.x = x;
+	user.world.position.y = y;
 	if (map) {
 		user.currentMap = map;
 	}
@@ -46,7 +46,7 @@ const getUserPosition = async(req, res) => {
 		throw new Error(`No user found with id ${userId}.`);
 	}
 
-	res.status(StatusCodes.OK).json({ x: user.position.x, y: user.position.y });
+	res.status(StatusCodes.OK).json({ x: user.world.position.x, y: user.world.position.y });
 }
 
 module.exports = {
