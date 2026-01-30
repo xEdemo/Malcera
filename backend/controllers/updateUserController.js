@@ -8,11 +8,11 @@ const { StatusCodes } = require('http-status-codes');
  */
 const userPosition = async (req, res) => {
 	const userId = req.user._id.toString();
-	const { x, y, map } = req.body;
+	const { x, z, map } = req.body;
 
-	if (!Number.isInteger(x) || !Number.isInteger(y)) {
+	if (!Number.isInteger(z) || !Number.isInteger(x)) {
 		res.status(StatusCodes.BAD_REQUEST);
-		throw new Error(`x or y is not an integer.`);
+		throw new Error(`x or z is not an integer.`);
 	}
 
 	const user = await User.findById(userId);
@@ -23,9 +23,9 @@ const userPosition = async (req, res) => {
 	}
 
 	user.world.position.x = x;
-	user.world.position.y = y;
+	user.world.position.z = z;
 	if (map) {
-		user.currentMap = map;
+		user.world.currentMap = map;
 	}
 	await user.save();
 
@@ -46,7 +46,7 @@ const getUserPosition = async(req, res) => {
 		throw new Error(`No user found with id ${userId}.`);
 	}
 
-	res.status(StatusCodes.OK).json({ x: user.world.position.x, y: user.world.position.y });
+	res.status(StatusCodes.OK).json({ x: user.world.position.x, z: user.world.position.z });
 }
 
 module.exports = {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 
-const Dropdown = ({ placeholder, onAction, options }) => {
+const Dropdown = ({ placeholder, role, onAction, options }) => {
 	const [open, setOpen] = useState(false);
 	const [activeIndex, setActiveIndex] = useState(0);
 	const triggerRef = useRef(null);
@@ -93,7 +93,7 @@ const Dropdown = ({ placeholder, onAction, options }) => {
 
 	return (
 		<div className="user-dropdown">
-			<div
+			<p
 				ref={triggerRef}
 				type="button"
 				className="user-dropdown-trigger"
@@ -109,7 +109,7 @@ const Dropdown = ({ placeholder, onAction, options }) => {
 				) : (
 					<ChevronDownIcon style={{ width: "12px" }} />
 				)}
-			</div>
+			</p>
 
 			{open && (
 				<div
@@ -120,21 +120,31 @@ const Dropdown = ({ placeholder, onAction, options }) => {
 					className="user-dropdown-menu"
 					onKeyDown={onMenuKeyDown}
 				>
-					{options.map((opt, idx) => (
-						<button
-							key={opt.value}
-							role="menuitem"
-							className={`user-dropdown-item ${
-								idx === activeIndex ? "is-active" : ""
-							}`}
-							ref={(el) => (itemRefs.current[idx] = el)}
-							tabIndex={-1}
-							onClick={() => handleSelect(opt)}
-							onMouseEnter={() => setActiveIndex(idx)}
-						>
-							{opt.icon} {opt.label}
-						</button>
-					))}
+					{options.map((opt, idx) => {
+						// gate admin
+						if (
+							opt.value === "admin" &&
+							!(role === "admin" || role === "superAdmin")
+						) {
+							return null;
+						}
+
+						return (
+							<button
+								key={opt.value}
+								role="menuitem"
+								className={`user-dropdown-item ${
+									idx === activeIndex ? "is-active" : ""
+								}`}
+								ref={(el) => (itemRefs.current[idx] = el)}
+								tabIndex={-1}
+								onClick={() => handleSelect(opt)}
+								onMouseEnter={() => setActiveIndex(idx)}
+							>
+								{opt.icon} {opt.label}
+							</button>
+						);
+					})}
 				</div>
 			)}
 		</div>

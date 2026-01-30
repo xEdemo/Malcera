@@ -3,3 +3,5 @@ export const BATTLE_URL = '/api/v1/battle';
 export const INVENTORY_URL = '/api/v1/inventory';
 export const CHARACTER_URL = '/api/v1/character';
 export const UPDATE_USER_URL = '/api/v1/update-user';
+export const ITEM_URL = '/api/v1/item';
+export const MAP_URL = '/api/v1/map';

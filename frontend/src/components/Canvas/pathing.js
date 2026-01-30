@@ -1,14 +1,14 @@
 // Breadth-First Search
 export const isWalkable = (
-	startX,
-	startY,
-	startZ,
-	targetX,
-	targetY,
-	targetZ,
-	map,
+	startX, // col
+	startY, // row
+	startZ, // height
+	targetX, // col
+	targetY, // row
+	targetZ, // height
+	map
 ) => {
-	if (map[targetY][targetX].v <= 0) return false;
+	if (map[targetY]?.[targetX]?.v <= 0) return false;
 
 	const directions = [
 		[0, 1],
@@ -17,34 +17,34 @@ export const isWalkable = (
 		[-1, 0],
 	];
 
-	const isValidTile = (x, y, currentZ) =>
+	const isValidTile = (x, y, currentHeight) =>
 		map[y] &&
 		map[y][x] &&
 		map[y][x].v > 0 &&
-		Math.abs(map[y][x].z - currentZ) <= 1;
+		Math.abs(map[y][x].y - currentHeight) <= 1;
 
 	const queue = [[startX, startY, startZ]];
 	const visited = new Set();
 	visited.add(`${startX},${startY},${startZ}`);
 
 	while (queue.length > 0) {
-		const [x, y, z] = queue.shift();
+		const [x, y, h] = queue.shift();
 
-		if (x === targetX && y === targetY && Math.abs(z - targetZ) <= 1) {
+		if (x === targetX && y === targetY && Math.abs(h - targetZ) <= 1) {
 			return true;
 		}
 
 		for (const [dx, dy] of directions) {
 			const newX = x + dx;
 			const newY = y + dy;
-			const newZ = map[newY] && map[newY][newX] ? map[newY][newX].z : z;
+			const newH = map[newY] && map[newY][newX] ? map[newY][newX].y : h;
 
 			if (
-				isValidTile(newX, newY, z) &&
-				!visited.has(`${newX},${newY},${newZ}`)
+				isValidTile(newX, newY, h) &&
+				!visited.has(`${newX},${newY},${newH}`)
 			) {
-				visited.add(`${newX},${newY},${newZ}`);
-				queue.push([newX, newY, newZ]);
+				visited.add(`${newX},${newY},${newH}`);
+				queue.push([newX, newY, newH]);
 			}
 		}
 	}
@@ -61,17 +61,17 @@ export const findPath = (start, goal, map) => {
 		[-1, 0],
 	];
 
-	// Manhattan Distance
+	// Manhattan Distance (col/row only)
 	const heuristic = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
 
-	const isValidTile = (x, y, currentZ) =>
+	const isValidTile = (x, y, currentHeight) =>
 		map[y] &&
 		map[y][x] &&
 		map[y][x].v > 0 &&
-		Math.abs(map[y][x].z - currentZ) <= 1;
+		Math.abs(map[y][x].y - currentHeight) <= 1;
 
 	const startNode = {
-		position: start,
+		position: start, // [x(col), y(row), height]
 		cost: 0,
 		estimatedTotalCost: heuristic(start, goal),
 		previous: null,
@@ -85,9 +85,9 @@ export const findPath = (start, goal, map) => {
 		openList.sort((a, b) => a.estimatedTotalCost - b.estimatedTotalCost);
 		const currentNode = openList.shift();
 
-		const [x, y, z] = currentNode.position;
+		const [x, y, h] = currentNode.position;
 
-		if (x === goal[0] && y === goal[1] && Math.abs(z - goal[2]) <= 1) {
+		if (x === goal[0] && y === goal[1] && Math.abs(h - goal[2]) <= 1) {
 			const path = [];
 			let node = currentNode;
 			while (node) {
@@ -100,14 +100,14 @@ export const findPath = (start, goal, map) => {
 		for (const [dx, dy] of directions) {
 			const newX = x + dx;
 			const newY = y + dy;
-			const newZ = map[newY] && map[newY][newX] ? map[newY][newX].z : z;
+			const newH = map[newY] && map[newY][newX] ? map[newY][newX].y : h;
 
 			if (
-				isValidTile(newX, newY, z) &&
-				!closedList.has(`${newX},${newY},${newZ}`)
+				isValidTile(newX, newY, h) &&
+				!closedList.has(`${newX},${newY},${newH}`)
 			) {
 				const newNode = {
-					position: [newX, newY, newZ],
+					position: [newX, newY, newH],
 					cost: currentNode.cost + 1,
 					estimatedTotalCost:
 						currentNode.cost + 1 + heuristic([newX, newY], goal),
@@ -115,10 +115,10 @@ export const findPath = (start, goal, map) => {
 				};
 
 				openList.push(newNode);
-				closedList.add(`${newX},${newY},${newZ}`);
+				closedList.add(`${newX},${newY},${newH}`);
 			}
 		}
 	}
 
 	return [];
-}
+};

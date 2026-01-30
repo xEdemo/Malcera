@@ -1,80 +1,50 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const { INVENTORY_SLOTS } = require("../utils/enum.js");
 
 const InventorySlotSchema = new mongoose.Schema(
-    {
-        item: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Item',
-        },
-        name: {
-            type: String,
-        },
-        description: {
-            type: String,
-        },
-        image: {
-            type: String,
-        },
-        quantity: {
-            type: Number,
-        },
-        stackable: {
-            type: Boolean,
-        },
-        consumable: {
-            type: Boolean,
-        },
-        equippable: {
-            type: Boolean,
-        },
-        equippableTo: {
-            type: [String],
-            enum: [
-				"none",
-				"ammo",
-				"mantle",
-				"weaponRight",
-				"handJewelryRight",
-				"helmet",
-				"neck",
-				"chest",
-				"greaves",
-				"boots",
-				"gauntlets",
-				"weaponLeft",
-				"handJewelryLeft",
-			],
-        },
-        healAmount: {
-            type: Number,
-        },
-        armourRating: {
-            type: Number,
-        },
-        weaponPower: {
-            type: Number,
-        },
-    },
-    { _id: false }
+	{
+		item: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Item",
+			default: null,
+		},
+		quantity: {
+			type: Number,
+			default: 0,
+			min: 0,
+		},
+
+		// Per-instance/per-slot metadata
+		// meta: {
+		// 	durability: { type: Number, min: 0 },
+		// 	// rolledStats: { ... } etc.
+		// 	bound: { type: Boolean, default: false },
+		// },
+	},
+	{ _id: false }
 );
 
 const InventorySchema = new mongoose.Schema(
-    {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-        },
-        slots: {
-            type: [InventorySlotSchema],
-            validate: [
-                (slots) => slots.length <= 40,
-                'Your inventory is full.',
-            ],
-        },
-    },
-    { timestamps: true }
+	{
+		user: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+			required: true,
+			unique: true,
+		},
+		slots: {
+			type: [InventorySlotSchema],
+			default: () =>
+				Array.from({ length: INVENTORY_SLOTS }, () => ({ item: null, quantity: 0 })),
+			validate: [
+				(slots) => slots.length === INVENTORY_SLOTS,
+				`Inventory must have exactly ${INVENTORY_SLOTS} slots.`,
+			],
+		},
+	},
+	{ timestamps: true }
 );
 
-const Inventory = mongoose.model('Inventory', InventorySchema);
+const Inventory = mongoose.model("Inventory", InventorySchema);
 
 module.exports = Inventory;

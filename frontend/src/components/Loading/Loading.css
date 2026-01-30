@@ -1,12 +1,8 @@
-.loading-component-container{
-    display: flex;
-    justify-content: center;
-    height: 100vh;
-    width: 100vw;
-    align-items: center;
-    background-color: rgba(49, 51, 56, 0.7);
+.loading-container {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.loading-component-box{
-    flex: 0 0 100px;
-}

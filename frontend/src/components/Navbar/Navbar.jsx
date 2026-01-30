@@ -9,15 +9,14 @@ import { Loading } from "../";
 import { toast } from "react-toastify";
 import { Dropdown, LeaderboardsMegaMenu } from "../";
 
-import logo from "../../images/malcera-temp-logo.png";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-import { ImPlay3 } from "react-icons/im";
-import { ImProfile } from "react-icons/im";
-import { FiLogOut } from "react-icons/fi";
+import logo from "../../assets/landing/malcera-temp-logo.png";
+// import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
+import { useHeaderOptions } from "../Dropdown/options.jsx";
 
 const Navbar = () => {
 	const [isMenuClicked, setIsMenuClicked] = useState(false);
 
+	const { options, handleOptionChange } = useHeaderOptions();
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
@@ -43,12 +42,6 @@ const Navbar = () => {
 
 	const [logout] = useLogoutMutation();
 
-	const options = [
-		{ value: "play", label: "Play", icon: <ImPlay3 /> },
-		{ value: "settings", label: "Profile", icon: <ImProfile /> },
-		{ value: "logout", label: "Logout", icon: <FiLogOut /> },
-	];
-
 	const logoutHandler = async () => {
 		try {
 			await logout().unwrap();
@@ -62,17 +55,6 @@ const Navbar = () => {
 
 	const updateMenu = () => {
 		setIsMenuClicked((prevValue) => !prevValue);
-	};
-
-	const handleOptionChange = (option) => {
-		const value = option ? option.value : null;
-		if (value === "play") {
-			navigate("/game");
-		} else if (value === "settings") {
-			navigate("/profile");
-		} else if (value === "logout") {
-			logoutHandler();
-		}
 	};
 
 	if (isLoading) {
@@ -110,6 +92,7 @@ const Navbar = () => {
 							<div>
 								<Dropdown
 									placeholder={userData.account.username}
+									role={userData.account.role}
 									options={options}
 									onAction={handleOptionChange}
 								/>

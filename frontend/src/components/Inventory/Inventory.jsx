@@ -16,12 +16,17 @@ const inventoryRows = 8;
 const inventoryColumns = 5;
 const inventorySlots = inventoryRows * inventoryColumns;
 
-const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrollTop, rerenderCharacter }) => {
+const Inventory = ({
+	inventoryState,
+	rerenderInventory,
+	scrollTop,
+	rerenderCharacter,
+}) => {
 	const sidebarState = JSON.parse(localStorage.getItem("SIDEBAR_STATE"));
 
 	const inventoryItems = inventoryState.inventoryItems;
-    const [draggedItemIndex, setDraggedItemIndex] = useState(null);
-    const [dragOverIndex, setDragOverIndex] = useState(null);
+	const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+	const [dragOverIndex, setDragOverIndex] = useState(null);
 
 	const inventoryContainerRef = useRef(null);
 
@@ -40,59 +45,53 @@ const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrol
 
 	const handleDragStart = (index, e) => {
 		e.dataTransfer.effectAllowed = "move";
-        setDraggedItemIndex(index);
+		setDraggedItemIndex(index);
 	};
 
 	const handleDragOver = (index, e) => {
-        e.preventDefault();
-        setDragOverIndex(index);
-    };
+		e.preventDefault();
+		setDragOverIndex(index);
+	};
 
 	const handleDragEnd = (e) => {
-        setDragOverIndex(null);
-    };
+		setDragOverIndex(null);
+	};
 
 	const handleDrop = async (index, e) => {
-        e.preventDefault();
+		e.preventDefault();
 
-        if (draggedItemIndex === null) return;
+		if (draggedItemIndex === null) return;
 
-        const updatedItems = [...inventoryItems];
-        const draggedItem = updatedItems[draggedItemIndex];
-        const targetItem = updatedItems[index];
+		const updatedItems = [...inventoryItems];
+		const draggedItem = updatedItems[draggedItemIndex];
+		const targetItem = updatedItems[index];
 
-        updatedItems[draggedItemIndex] = targetItem;
-        updatedItems[index] = draggedItem;
+		updatedItems[draggedItemIndex] = targetItem;
+		updatedItems[index] = draggedItem;
 
-        if (draggedItem.stackable && targetItem.stackable && draggedItem.name === targetItem.name) {
-            const res = await combineStack({
-                emptySlotIndex: draggedItemIndex,
-                combinedIndex: index,
-            }).unwrap();
+		console.log(index);
 
-            if (res.updatedInventory && res.updatedInventory.slots) {
-                dispatchInventory({
-                    type: "SET_INVENTORY_ITEMS",
-                    payload: res.updatedInventory.slots,
-                });
-            }
-        } else {
-            const res = await onDrop({
-                changedIndices: [draggedItemIndex, index],
-                updatedItems,
-            }).unwrap();
+		if (
+			draggedItem?.item?.flags?.stackable &&
+			targetItem?.item?.flags?.stackable &&
+			draggedItem?.item?.key === targetItem?.item?.key
+		) {
+			const res = await combineStack({
+				fromIndex: draggedItemIndex,
+				toIndex: index,
+			}).unwrap();
+		} else {
+			const res = await onDrop({
+				fromIndex: draggedItemIndex,
+				toIndex: index,
+			}).unwrap();
+		}
 
-            if (res.updatedInventory && res.updatedInventory.slots) {
-                dispatchInventory({
-                    type: "SET_INVENTORY_ITEMS",
-                    payload: res.updatedInventory.slots,
-                });
-            }
-        }
+		rerenderInventory();
 
-        setDraggedItemIndex(null);
-        setDragOverIndex(null);
-    };
+		setDraggedItemIndex(null);
+		setDragOverIndex(null);
+	};
 
 	useEffect(() => {
 		if (!contextMenu.show) {
@@ -103,14 +102,16 @@ const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrol
 
 	useEffect(() => {
 		if (contextMenu.index !== undefined) {
-			const itemName = inventoryItems[contextMenu.index]?.name;
-			const isStackable = inventoryItems[contextMenu.index]?.stackable;
-			const isEquippable = inventoryItems[contextMenu.index]?.equippable;
+			const itemName = inventoryItems[contextMenu.index]?.item?.name;
+			const isStackable =
+				inventoryItems[contextMenu.index]?.item?.flags?.stackable;
+			const isEquippable =
+				inventoryItems[contextMenu.index]?.item?.flags?.equippable;
 			const stackQuantity = inventoryItems[contextMenu.index]?.quantity;
 			const itemIndex = contextMenu.index;
 
 			const checkForEmptySlot = inventoryItems.some(
-				(item) => item.name === "Empty Slot"
+				(item) => item.item === null
 			);
 
 			if (itemName) {
@@ -156,27 +157,29 @@ const Inventory = ({ inventoryState, rerenderInventory, dispatchInventory, scrol
 			>
 				{inventoryItems.map((inventoryItem, index) => (
 					<React.Fragment key={index}>
-						<div 
+						<div
 							className={`inventory-slot ${
-                            dragOverIndex === index ? "drag-over" : ""
-                        	}`}
+								dragOverIndex === index ? "drag-over" : ""
+							}`}
 							onDragOver={(e) => handleDragOver(index, e)}
-                        	onDrop={(e) => handleDrop(index, e)}
+							onDrop={(e) => handleDrop(index, e)}
 							onDragEnd={(e) => handleDragEnd(e)}
 						>
-							{inventoryItem?.name !== "Empty Slot" && (
+							{inventoryItem?.item !== null && (
 								<>
 									<img
-										src={itemImages[inventoryItem?.name]}
-										alt={inventoryItem?.name}
-										title={inventoryItem?.description}
-										onDragStart={(e) => handleDragStart(index, e)}
+										src={inventoryItem?.item?.image?.url || itemImages[inventoryItem?.item?.key]}
+										alt={inventoryItem?.item?.name}
+										title={inventoryItem?.item?.description}
+										onDragStart={(e) =>
+											handleDragStart(index, e)
+										}
 										draggable
 										onContextMenu={(e) =>
 											showContextMenu(index, e)
 										}
 									/>
-									{inventoryItem?.stackable && (
+									{inventoryItem?.item?.flags?.stackable && (
 										<b className="inventory-quantity">
 											{inventoryItem?.quantity}
 										</b>

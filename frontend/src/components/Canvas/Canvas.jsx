@@ -1,68 +1,157 @@
-import { useRef, useEffect, useState, useCallback, useMemo } from "react";
-import { maps, tileWidth, tileLength, gridRows, gridColumns } from "./maps.js";
+import {
+	useRef,
+	useEffect,
+	useState,
+	useCallback,
+	useMemo,
+	Suspense,
+} from "react";
 import { isWalkable, findPath } from "./pathing.js";
-import { useDispatch } from "react-redux";
+import { base64ToUint32Array } from "../../utils/tilePacking.js";
+import { useDispatch, useSelector } from "react-redux";
 import { useUpdatePositionMutation } from "../../slices/updateUser/updateUserApiSlice.js";
-import {
-	updateUserPosition,
-	updateUserMap,
-} from "../../slices/user/userSlice.js";
-import { toast } from "react-toastify";
-import terrainss from "../../assets/sprites/terrain/terrainss.png";
 import { getPosition } from "../../slices/updateUser/updateUserSlice.js";
+import { fetchMapByKey, setActiveMapKey } from "../../slices/map/mapSlice.js";
+import { unpackY, unpackP, unpackV, unpackW } from "../../utils/tilePacking.js";
+import { Canvas as CanvasFiber, useFrame, useThree } from "@react-three/fiber";
 import {
-	Canvas as CanvasFiber,
-	useFrame
-} from "@react-three/fiber";
-import { PerspectiveCamera, Sparkles, Sky } from "@react-three/drei";
-import * as THREE from 'three';
+	PerspectiveCamera,
+	Sparkles,
+	Sky,
+	OrbitControls,
+	useGLTF,
+} from "@react-three/drei";
+import * as THREE from "three";
+import Terrain from "./Terrain.jsx";
+import { toast } from "react-toastify";
 
 const playerSpeedMultiplier = 5.0;
 const cameraSpeedMultiplier = 2.5;
 
 const playerHeight = 1.5;
 
-const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserData }) => {
+function Cube(props) {
+	const { scene } = useGLTF("/src/assets/3D/environment/TestCube.glb");
+
+	// optional, but helps avoid "Disposed" weirdness if you mount/unmount a lot
+	return <primitive object={scene} {...props} dispose={null} />;
+}
+
+const Canvas = ({
+	isLeftSidebarOpen,
+	isRightSidebarOpen,
+	userData,
+	refetchUserData,
+}) => {
 	const dispatch = useDispatch();
 
-	// Will have to be an empty array when there are more images
-	const imageRef = useRef(null);
+	const [currentMap, setCurrentMap] = useState(userData.world.currentMap);
+	const [playerPosition, setPlayerPosition] = useState(() => {
+		const x = userData.world.position.x;
+		const z = userData.world.position.z;
+		const y = 0; // will be corrected in effect
+		return { x, y, z };
+	});
+
+	// Fetches currentMap whenever it channges
+	useEffect(() => {
+		dispatch(setActiveMapKey(currentMap));
+		dispatch(fetchMapByKey(currentMap))
+			.unwrap()
+			.catch((e) => toast.error(e));
+	}, [dispatch, currentMap]);
+
+	const mapDoc = useSelector((state) => state.map.mapByKey[currentMap]);
+
+	const tilesU32 = useMemo(() => {
+		if (!mapDoc?.tilesBase64) return null;
+		try {
+			return base64ToUint32Array(mapDoc.tilesBase64);
+		} catch (e) {
+			console.error(e);
+			return null;
+		}
+	}, [mapDoc?.tilesBase64]);
+
+	const width = mapDoc?.width ?? 0;
+	const height = mapDoc?.height ?? 0;
+
+	const inBounds = useCallback(
+		(x, z) => x >= 0 && z >= 0 && x < width && z < height,
+		[width, height]
+	);
+
+	const getPacked = useCallback(
+		(x, z) => {
+			if (!tilesU32 || !inBounds(x, z)) return 0;
+			return tilesU32[z * width + x] >>> 0;
+		},
+		[tilesU32, width, inBounds]
+	);
+
+	const getY = useCallback((x, z) => unpackY(getPacked(x, z)), [getPacked]);
+	const getV = useCallback((x, z) => unpackV(getPacked(x, z)), [getPacked]);
+	const isPortalTile = useCallback(
+		(x, z) => unpackP(getPacked(x, z)),
+		[getPacked]
+	);
 
 	const [ws, setWs] = useState(null);
 	const [otherPlayers, setOtherPlayers] = useState([]);
-
 	const [shouldRenderCanvas, setShouldRenderCanvas] = useState(true);
 
-	const [currentMap, setCurrentMap] = useState(userData.world.currentMap);
-	const [playerPosition, setPlayerPosition] = useState({
-		x: userData.world.position.x,
-		y: userData.world.position.y,
-		z: maps[userData.world.currentMap][userData.world.position.y][userData.world.position.x]
-			.z,
-	});
+	useEffect(() => {
+		if (!tilesU32 || !mapDoc) return;
+
+		const x = userData.world.position.x;
+		const z = userData.world.position.z;
+
+		if (x == null || z == null) return;
+		if (x < 0 || z < 0 || x >= width || z >= height) return;
+
+		setPlayerPosition({ x, z, y: getY(x, z) });
+	}, [
+		tilesU32,
+		mapDoc,
+		width,
+		height,
+		getY,
+		userData.world.position.x,
+		userData.world.position.z,
+	]);
+
+	useEffect(() => {
+		if (!mapDoc || !tilesU32) return;
+
+		setPlayerPosition((prev) => {
+			const x = prev.x;
+			const z = prev.z;
+			if (x < 0 || z < 0 || x >= mapDoc.width || z >= mapDoc.height)
+				return prev;
+
+			const idx = z * mapDoc.width + x;
+			const y = unpackY(tilesU32[idx] >>> 0);
+
+			// only update if y changed (prevents render jitter)
+			if (prev.y === y) return prev;
+			return { ...prev, y };
+		});
+	}, [mapDoc?.key, mapDoc?.width, mapDoc?.height, tilesU32]);
 
 	const [updatePositionMut] = useUpdatePositionMutation();
 
-	const updatePositionDB = async (x, y, map) => {
+	const updatePositionDB = async (x, z, map) => {
 		try {
-			const res = await updatePositionMut({
-				x,
-				y,
-				map,
-			});
-			if (res.data) {
-				refetchUserData();
-			}
-			if (res.error && res.error.data && res.error.data.message) {
-				toast.error(res.error.data.message);
-			}
+			const res = await updatePositionMut({ x, z, map });
+			if (res.data) refetchUserData();
+			if (res.error?.data?.message) toast.error(res.error.data.message);
 		} catch (error) {
 			toast.error("Error updating user position.");
 		}
 	};
 
 	useEffect(() => {
-		const ws = new WebSocket(`ws://localhost:5000`);
+		const ws = new WebSocket(`ws://${import.meta.env.VITE_BACKEND_URL}`);
 		setWs(ws);
 
 		ws.addEventListener("open", () => {
@@ -71,10 +160,7 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 
 		ws.addEventListener("message", (e) => {
 			const data = JSON.parse(e.data);
-			if (data.playerPositions) {
-				setOtherPlayers(data.playerPositions);
-				//console.log(data.playerPositions);
-			}
+			if (data.playerPositions) setOtherPlayers(data.playerPositions);
 		});
 
 		ws.addEventListener("close", () => {
@@ -90,15 +176,16 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 
 	const fetchPosition = async () => {
 		try {
-			const res = await dispatch(getPosition());
-			if (res.payload) {
-				setPlayerPosition({
-					x: res.payload.x,
-					y: res.payload.y,
-					z: maps[userData.world.currentMap][res.payload.y][res.payload.x]
-						.z,
-				});
-			}
+			const res = await dispatch(getPosition()).unwrap();
+			if (!res) return;
+
+			const x = res.x;
+			const z = res.z;
+
+			if (!mapDoc || !tilesU32) return; // map not loaded yet
+			if (!inBounds(x, z)) return;
+
+			setPlayerPosition({ x, z, y: getY(x, z) });
 		} catch (err) {
 			console.error(`Error fetching player position: ${err}`);
 		}
@@ -118,7 +205,6 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 		}
 	}, [isRightSidebarOpen, isLeftSidebarOpen]);
 
-	// Add particles
 	return (
 		<div style={{ padding: "10px" }}>
 			{shouldRenderCanvas && (
@@ -127,42 +213,70 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 						width: "100%",
 						height: "calc(100vh - 126px)",
 					}}
+					shadows
 				>
 					<Sky sunPosition={[10, 10, 10]} distance={4500} />
-					<ambientLight intensity={0.9} />
-					<pointLight castShadow intensity={0.9} position={[10, 0, 10]} />
-					{maps[currentMap].map((row, rowIndex) =>
-						row.map((tile, colIndex) => (
-							<Tile
-								key={`${rowIndex}-${colIndex}`}
-								position={[colIndex, -rowIndex, tile.z]} // Adjusting y to negative for correct orientation
-								color={
-									tile.v === 1
-										? "hotpink"
-										: tile.v === 2
-										? "blue"
-										: tile.v === 3
-										? "red"
-										: tile.v === 4
-										? "indianred"
-										: tile.v >= 900
-										? "black"
-										: "gray"
-								} // Different colors/images based on tile value
-								currentMap={currentMap}
-								userData={userData}
-							/>
-						))
+
+					{mapDoc?.lighting?.ambient && (
+						<ambientLight
+							intensity={mapDoc?.lighting?.ambient?.intensity}
+							color={mapDoc?.lighting?.ambient?.color}
+						/>
 					)}
+
+					{mapDoc?.lighting?.directional && (
+						<directionalLight
+							intensity={mapDoc?.lighting?.directional?.intensity}
+							color={mapDoc?.lighting?.directional?.color}
+							position={[
+								mapDoc?.lighting?.directional?.position?.x,
+								mapDoc?.lighting?.directional?.position?.y,
+								mapDoc?.lighting?.directional?.position?.z,
+							]}
+						/>
+					)}
+
+					{mapDoc?.lighting?.point.length >= 1 &&
+						mapDoc?.lighting?.point.map((p, i) => (
+							<pointLight
+								key={i}
+								intensity={p?.intensity}
+								color={p?.color}
+								position={[
+									p?.position?.x,
+									p?.position?.y,
+									p?.position?.z,
+								]}
+								distance={[p?.distance]}
+								decay={p?.decay}
+							/>
+						))}
+
+					{tilesU32 && mapDoc && (
+						<Terrain
+							width={mapDoc.width}
+							height={mapDoc.height}
+							tilesU32={tilesU32}
+							tileSize={1}
+							uvScale={3}
+						/>
+					)}
+
 					<Player
 						position={playerPosition}
-						color={"red"}
+						color={"lime"}
 						updatePositionDB={updatePositionDB}
 						currentMap={currentMap}
 						setCurrentMap={setCurrentMap}
 						setPlayerPosition={setPlayerPosition}
 						ws={ws}
+						mapDoc={mapDoc}
+						tilesU32={tilesU32}
+						getY={getY}
+						getV={getV}
+						isPortalTile={isPortalTile}
 					/>
+
 					{otherPlayers
 						.filter(
 							(player) =>
@@ -172,6 +286,8 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 						.map((player) => (
 							<OtherPlayers key={player.id} player={player} />
 						))}
+
+					<Cube position={[0, 0, 0]} scale={1} rotation={[0, 0, 0]} />
 				</CanvasFiber>
 			)}
 		</div>
@@ -179,7 +295,6 @@ const Canvas = ({ isLeftSidebarOpen, isRightSidebarOpen, userData, refetchUserDa
 };
 
 const Tile = ({ position, color, currentMap, userData }) => {
-	const ref = useRef();
 	const [isTileHovered, setIsTileHovered] = useState(false);
 	const [isTileClicked, setIsTileClicked] = useState(false);
 
@@ -189,16 +304,21 @@ const Tile = ({ position, color, currentMap, userData }) => {
 
 	const handlePointerOver = (e) => {
 		e.stopPropagation();
+		const startX = userData.world.position.x; // col
+		const startY = userData.world.position.z; // row
+		const startZ = maps[currentMap][startY][startX].y; // height
+
+		const targetX = position[0]; // col
+		const targetY = position[2]; // row
+		const targetZ = position[1]; // height
 		if (
 			isWalkable(
-				userData.world.position.x,
-				userData.world.position.y,
-				maps[currentMap][userData.world.position.y][
-					userData.world.position.x
-				].z,
-				position[0],
-				Math.abs(position[1]),
-				position[2],
+				startX,
+				startY,
+				startZ,
+				targetX,
+				targetY,
+				targetZ,
 				maps[currentMap]
 			)
 		) {
@@ -208,8 +328,14 @@ const Tile = ({ position, color, currentMap, userData }) => {
 
 	const handlePointerDown = (e) => {
 		e.stopPropagation();
-		const start = [userData.world.position.x, userData.world.position.y, maps[currentMap][userData.world.position.y][userData.world.position.x].z];
-		const goal = [position[0], Math.abs(position[1]), position[2]];
+
+		const startX = userData.world.position.x; // col
+		const startY = userData.world.position.z; // row
+		const startZ = maps[currentMap][startY][startX].y; // height
+
+		const start = [startX, startY, startZ];
+		const goal = [position[0], position[2], position[1]];
+
 		const shortestPath = findPath(start, goal, maps[currentMap]);
 		if (shortestPath.length > 0) {
 			setIsTileClicked(true);
@@ -218,13 +344,13 @@ const Tile = ({ position, color, currentMap, userData }) => {
 	};
 
 	return (
-		<group position={position} ref={ref} receiveShadow>
+		<group position={position} receiveShadow>
 			<mesh>
 				<boxGeometry args={[1, 1, 1]} />
 				<meshStandardMaterial color={color} />
 			</mesh>
 			<mesh
-				position={[0, 0, 0.51]}
+				position={[0, 0.51, 0]}
 				onPointerOver={(e) => handlePointerOver(e)}
 				onPointerOut={() => setIsTileHovered(false)}
 				onPointerDown={(e) => handlePointerDown(e)}
@@ -235,7 +361,7 @@ const Tile = ({ position, color, currentMap, userData }) => {
 			</mesh>
 			{isTileHovered && (
 				<>
-					<mesh position={[0, 0, 0.515]}>
+					<mesh position={[0, 0.515, 0]}>
 						<ringGeometry args={[0.3, 0.5, 25]} />
 						<meshStandardMaterial color={"gold"} />
 					</mesh>
@@ -244,7 +370,7 @@ const Tile = ({ position, color, currentMap, userData }) => {
 						size={2}
 						speed={0.5}
 						color={"yellow"}
-						position={[0, 0, 0.6]}
+						position={[0, 0.6, 0]}
 					/>
 				</>
 			)}
@@ -254,15 +380,9 @@ const Tile = ({ position, color, currentMap, userData }) => {
 };
 
 const OtherPlayers = ({ player }) => {
-	const ref = useRef();
-
 	return (
-		<mesh
-			key={player.id}
-			position={[player.x, -player.y, player.z + playerHeight]}
-			ref={ref}
-		>
-			<boxGeometry args={[1, 1, 2, 2, 2, 2]} />
+		<mesh position={[player.x, player.y + playerHeight, player.z]}>
+			<boxGeometry args={[1, 2, 1, 2, 2, 2]} />
 			<meshStandardMaterial color="blue" wireframe />
 		</mesh>
 	);
@@ -276,6 +396,11 @@ const Player = ({
 	setCurrentMap,
 	setPlayerPosition,
 	ws,
+	mapDoc,
+	tilesU32,
+	getY,
+	getV,
+	isPortalTile,
 }) => {
 	const ref = useRef();
 	const cameraRef = useRef();
@@ -293,101 +418,110 @@ const Player = ({
 	const [lastMoveTime, setLastMoveTime] = useState(0);
 	const moveDelay = 300;
 
+	const portalByIndex = useMemo(() => {
+		if (!mapDoc?.portals?.length || !mapDoc?.width) return new Map();
+		const m = new Map();
+		for (const p of mapDoc.portals) {
+			const idx = p.from.z * mapDoc.width + p.from.x;
+			m.set(idx, p.to);
+		}
+		return m;
+	}, [mapDoc?.portals, mapDoc?.width]);
+
 	const handleMove = (direction) => {
+		if (!mapDoc || !tilesU32) return;
+
 		const currentTime = Date.now();
 		if (currentTime - lastMoveTime < moveDelay) return;
 
-		const { x, y, z } = playerPositionRef.current;
-		let newX = x,
-			newY = y,
-			newZ = z;
+		const width = mapDoc.width;
+		const height = mapDoc.height;
+
+		const { x, z } = playerPositionRef.current;
+
+		let newX = x;
+		let newZ = z;
 
 		if (direction === "left" && x > 0) newX -= 1;
-		if (direction === "right" && x < maps[currentMap][0].length - 1)
-			newX += 1;
-		if (direction === "up" && y > 0) newY -= 1;
-		if (direction === "down" && y < maps[currentMap].length - 1) newY += 1;
+		if (direction === "right" && x < width - 1) newX += 1;
+		if (direction === "up" && z > 0) newZ -= 1;
+		if (direction === "down" && z < height - 1) newZ += 1;
 
-		const checkZ = Math.abs(
-			maps[currentMap][newY][newX].z - maps[currentMap][y][x].z
+		if (newX === x && newZ === z) return;
+
+		const idxFrom = z * width + x;
+		const idxTo = newZ * width + newX;
+
+		const packedFrom = tilesU32[idxFrom] >>> 0;
+		const packedTo = tilesU32[idxTo] >>> 0;
+
+		const fromH = unpackY(packedFrom);
+		const toH = unpackY(packedTo);
+
+		// vertical step limit
+		if (Math.abs(toH - fromH) > 1) return;
+
+		// walkable based on packed flag
+		if (!unpackW(packedTo)) return;
+
+		// PORTAL: trigger based on portal list (reliable)
+		const dest = portalByIndex.get(idxTo);
+
+		console.log(
+			"stepped idxTo",
+			idxTo,
+			"portal?",
+			portalByIndex.has(idxTo),
+			mapDoc.portals
 		);
+		if (dest) {
+			setLastMoveTime(currentTime);
 
-		if (checkZ > 1) return;
+			const next = { x: dest.x, z: dest.z, y: 0 };
 
-		if (
-			maps[currentMap][newY] &&
-			maps[currentMap][newY][newX].v > 0 &&
-			maps[currentMap][newY][newX].v < 900
-		) {
-			if (newX !== x || newY !== y) {
-				setLastMoveTime(currentTime);
-				targetPositionRef.current = {
-					x: newX,
-					y: newY,
-					z: maps[currentMap][newY][newX].z,
-				};
-				playerPositionRef.current = {
-					x: newX,
-					y: newY,
-					z: maps[currentMap][newY][newX].z,
-				};
-				//setPlayerPosition({ x: newX, y: newY, z: newZ });
-				updatePositionDB(newX, newY, currentMap);
+			setCurrentMap(dest.key);
+
+			targetPositionRef.current = next;
+			playerPositionRef.current = next;
+			setPlayerPosition(next);
+
+			// snap mesh now to avoid lerp weirdness
+			if (ref.current) {
+				ref.current.position.set(next.x, next.y + playerHeight, next.z);
 			}
-		} else if (maps[currentMap][newY][newX].v === 900) {
-			setLastMoveTime(currentTime);
-			setCurrentMap("limbo");
-			targetPositionRef.current = {
-				x: 18,
-				y: 18,
-				z: maps["limbo"][18][18].z,
-			};
-			playerPositionRef.current = {
-				x: 18,
-				y: 18,
-				z: maps["limbo"][18][18].z,
-			};
-			setPlayerPosition({ x: 18, y: 18, z: maps["limbo"][18][18].z });
-			ws.send(
+
+			ws?.send(
 				JSON.stringify({
 					type: "playerMove",
-					payload: {
-						x: 18,
-						y: 18,
-						z: maps["limbo"][18][18].z,
-						map: "limbo",
-					},
+					payload: { ...next, map: dest.key },
 				})
 			);
-			updatePositionDB(18, 18, "limbo");
-		} else if (maps[currentMap][newY][newX].v === 901) {
-			setLastMoveTime(currentTime);
-			setCurrentMap("tutorial");
-			targetPositionRef.current = {
-				x: 1,
-				y: 18,
-				z: maps["tutorial"][18][1].z,
-			};
-			playerPositionRef.current = {
-				x: 1,
-				y: 18,
-				z: maps["tutorial"][18][1].z,
-			};
-			setPlayerPosition({ x: 1, y: 18, z: maps["tutorial"][18][1].z });
-			ws.send(
-				JSON.stringify({
-					type: "playerMove",
-					payload: {
-						x: 1,
-						y: 18,
-						z: maps["tutorial"][18][1].z,
-						map: "tutorial",
-					},
-				})
-			);
-			updatePositionDB(1, 18, "tutorial");
+			updatePositionDB(dest.x, dest.z, dest.key);
+
+			return;
 		}
+
+		// NORMAL MOVE
+		setLastMoveTime(currentTime);
+
+		const next = { x: newX, z: newZ, y: toH };
+		targetPositionRef.current = next;
+		playerPositionRef.current = next;
+		setPlayerPosition(next);
+
+		ws?.send(
+			JSON.stringify({
+				type: "playerMove",
+				payload: { ...next, map: currentMap },
+			})
+		);
+		updatePositionDB(newX, newZ, currentMap);
 	};
+
+	useEffect(() => {
+		playerPositionRef.current = position;
+		targetPositionRef.current = position;
+	}, [position]);
 
 	useEffect(() => {
 		const handleKeyDown = (e) => {
@@ -417,7 +551,6 @@ const Player = ({
 		};
 	}, []);
 
-	// May be too much for useFrame
 	useFrame((state, delta) => {
 		if (isMoving.up) handleMove("up");
 		if (isMoving.left) handleMove("left");
@@ -427,73 +560,41 @@ const Player = ({
 		if (ref.current) {
 			const currentPosition = ref.current.position;
 
-			const directionX = targetPositionRef.current.x - currentPosition.x;
-			const directionY = -targetPositionRef.current.y - currentPosition.y;
-			const directionZ =
-				targetPositionRef.current.z + playerHeight - currentPosition.z;
+			const tx = targetPositionRef.current.x;
+			const ty = targetPositionRef.current.y + playerHeight;
+			const tz = targetPositionRef.current.z;
 
-			const distance = Math.sqrt(
-				directionX * directionX +
-					directionY * directionY +
-					directionZ * directionZ
+			// smooth follow
+			currentPosition.x = THREE.MathUtils.lerp(
+				currentPosition.x,
+				tx,
+				delta * playerSpeedMultiplier
 			);
-
-			// Keeps player from shaking violently
-			if (distance > 0.05) {
-				const moveX = (directionX / distance) * playerSpeedMultiplier;
-				const moveY = (directionY / distance) * playerSpeedMultiplier;
-				const moveZ = (directionZ / distance) * playerSpeedMultiplier;
-
-				currentPosition.x += moveX * delta;
-				currentPosition.y += moveY * delta;
-				currentPosition.z += moveZ * delta;
-				// Animates player movement based on calculations above
-				ws.send(
-					JSON.stringify({
-						type: "playerMove",
-						payload: {
-							x: currentPosition.x,
-							y: -currentPosition.y,
-							z: currentPosition.z - playerHeight,
-							map: currentMap,
-						},
-					})
-				);
-			} else {
-				currentPosition.x = targetPositionRef.current.x;
-				currentPosition.y = -targetPositionRef.current.y;
-				currentPosition.z = targetPositionRef.current.z + playerHeight;
-				// Needed to continuously update the player's correct position to other players; Can more than likely optimize this
-				ws.send(
-					JSON.stringify({
-						type: "playerMove",
-						payload: {
-							x: currentPosition.x,
-							y: -currentPosition.y,
-							z: currentPosition.z - playerHeight,
-							map: currentMap,
-						},
-					})
-				);
-			}
+			currentPosition.y = THREE.MathUtils.lerp(
+				currentPosition.y,
+				ty,
+				delta * playerSpeedMultiplier
+			);
+			currentPosition.z = THREE.MathUtils.lerp(
+				currentPosition.z,
+				tz,
+				delta * playerSpeedMultiplier
+			);
 		}
 
 		if (cameraRef.current) {
 			cameraRef.current.position.lerp(
-				{
-					x: targetPositionRef.current.x,
-					y: -targetPositionRef.current.y - 9.5,
-					z:
-						9 +
-						maps[currentMap][targetPositionRef.current.y][
-							targetPositionRef.current.x
-						].z,
-				},
+				new THREE.Vector3(
+					targetPositionRef.current.x,
+					9 + targetPositionRef.current.y,
+					targetPositionRef.current.z + 8
+				),
 				delta * cameraSpeedMultiplier
 			);
-			cameraRef.current.rotation.x = Math.PI / 4; // Adjust this value to change the camera's pitch angle
-			cameraRef.current.rotation.y = 0; // Camera's yaw angle
-			cameraRef.current.rotation.z = 0; // Adjust this value to change the camera's roll angle
+
+			cameraRef.current.rotation.x = 5.5;
+			cameraRef.current.rotation.y = 0;
+			cameraRef.current.rotation.z = 0;
 			cameraRef.current.updateProjectionMatrix();
 		}
 	});
@@ -503,13 +604,14 @@ const Player = ({
 			<PerspectiveCamera
 				ref={cameraRef}
 				makeDefault
-				position={[position.x, -position.y, 9]}
+				position={[position.x, 9 + position.y, position.z + 8]}
 			/>
+			{/* <OrbitControls makeDefault /> */}
 			<mesh
-				position={[position.x, -position.y, position.z + playerHeight]}
+				position={[position.x, position.y + playerHeight, position.z]}
 				ref={ref}
 			>
-				<boxGeometry args={[1, 1, 2, 2, 2, 2]} />
+				<boxGeometry args={[1, 2, 1, 2, 2, 2]} />
 				<meshStandardMaterial color={color} wireframe />
 			</mesh>
 		</>
@@ -521,97 +623,57 @@ const Chevron = ({ position }) => {
 
 	const positions = [
 		// Right lower plate
-		0, -0.2, 0,
-		1, -0.2, 1,
-		1, 0.2, 1,
+		0, -0.2, 0, 1, -0.2, 1, 1, 0.2, 1,
 
-		0, -0.2, 0,
-		0, 0.2, 0,
-		1, 0.2, 1,
+		0, -0.2, 0, 0, 0.2, 0, 1, 0.2, 1,
 
 		// Right upper plate
-		0, -0.2, 0.6,
-		1, -0.2, 1.6,
-		1, 0.2, 1.6,
+		0, -0.2, 0.6, 1, -0.2, 1.6, 1, 0.2, 1.6,
 
-		0, -0.2, 0.6,
-		0, 0.2, 0.6,
-		1, 0.2, 1.6,
+		0, -0.2, 0.6, 0, 0.2, 0.6, 1, 0.2, 1.6,
 
 		// Far right wall
-		1, -0.2, 1.6,
-		1, -0.2, 1,
-		1, 0.2, 1,
+		1, -0.2, 1.6, 1, -0.2, 1, 1, 0.2, 1,
 
-		1, 0.2, 1,
-		1, 0.2, 1.6, 
-		1, -0.2, 1.6,
+		1, 0.2, 1, 1, 0.2, 1.6, 1, -0.2, 1.6,
 
 		// Right south wall
-		0, -0.2, 0,
-		1, -0.2, 1,
-		1, -0.2, 1.6, 
+		0, -0.2, 0, 1, -0.2, 1, 1, -0.2, 1.6,
 
-		1, -0.2, 1.6, 
-		0, -0.2, 0.6,
-		0, -0.2, 0,
+		1, -0.2, 1.6, 0, -0.2, 0.6, 0, -0.2, 0,
 
 		// Right north wall
-		0, 0.2, 0,
-		1, 0.2, 1,
-		1, 0.2, 1.6,
+		0, 0.2, 0, 1, 0.2, 1, 1, 0.2, 1.6,
 
-		1, 0.2, 1.6,
-		0, 0.2, 0.6,
-		0, 0.2, 0,
+		1, 0.2, 1.6, 0, 0.2, 0.6, 0, 0.2, 0,
 
 		// Left lower plate
-		0, -0.2, 0,
-		-1, -0.2, 1,
-		-1, 0.2, 1,
+		0, -0.2, 0, -1, -0.2, 1, -1, 0.2, 1,
 
-		-1, 0.2, 1,
-		0, 0.2, 0,
-		0, -0.2, 0,
+		-1, 0.2, 1, 0, 0.2, 0, 0, -0.2, 0,
 
 		// Left upper plate
-		0, -0.2, 0.6,
-		-1, -0.2, 1.6,
-		-1, 0.2, 1.6,
+		0, -0.2, 0.6, -1, -0.2, 1.6, -1, 0.2, 1.6,
 
-		-1, 0.2, 1.6,
-		0, 0.2, 0.6,
-		0, -0.2, 0.6,
+		-1, 0.2, 1.6, 0, 0.2, 0.6, 0, -0.2, 0.6,
 
 		// Far left wall
-		-1, -0.2, 1.6,
-		-1, -0.2, 1,
-		-1, 0.2, 1,
+		-1, -0.2, 1.6, -1, -0.2, 1, -1, 0.2, 1,
 
-		-1, 0.2, 1,
-		-1, 0.2, 1.6,
-		-1, -0.2, 1.6,
+		-1, 0.2, 1, -1, 0.2, 1.6, -1, -0.2, 1.6,
 
 		// Left south wall
-		0, -0.2, 0,
-		-1, -0.2, 1,
-		-1, -0.2, 1.6,
+		0, -0.2, 0, -1, -0.2, 1, -1, -0.2, 1.6,
 
-		-1, -0.2, 1.6,
-		0, -0.2, 0.6,
-		0, -0.2, 0,
+		-1, -0.2, 1.6, 0, -0.2, 0.6, 0, -0.2, 0,
 
 		// Left north wall
-		0, 0.2, 0,
-		-1, 0.2, 1,
-		-1, 0.2, 1.6,
+		0, 0.2, 0, -1, 0.2, 1, -1, 0.2, 1.6,
 
-		-1, 0.2, 1.6,
-		0, 0.2, 0.6,
-		0, 0.2, 0,
+		-1, 0.2, 1.6, 0, 0.2, 0.6, 0, 0.2, 0,
 	];
 
-	const newPositions = new Float32Array(positions.map(v => v / 4));
+	const newPositions = new Float32Array(positions.map((v) => v / 4));
 
 	useFrame(({ clock }) => {
 		const t = clock.getElapsedTime();
@@ -622,11 +684,16 @@ const Chevron = ({ position }) => {
 	return (
 		<mesh ref={ref} position={position}>
 			<bufferGeometry>
-				<bufferAttribute attach="attributes-position" array={newPositions} count={positions.length / 3} itemSize={3} />
+				<bufferAttribute
+					attach="attributes-position"
+					array={newPositions}
+					count={positions.length / 3}
+					itemSize={3}
+				/>
 			</bufferGeometry>
 			<meshStandardMaterial color="gold" side={THREE.DoubleSide} />
 		</mesh>
-	)
-} 
+	);
+};
 
 export default Canvas;

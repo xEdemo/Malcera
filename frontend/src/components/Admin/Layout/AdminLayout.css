@@ -1,0 +1,21 @@
+.admin-layout-container {
+	display: flex;
+	height: 100vh;
+	width: 100%;
+	overflow: hidden;
+}
+
+.admin-main {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0; /* prevent overflow when sidebar is open */
+}
+
+.admin-layout-content {
+	flex: 1 1 auto;
+	height: calc(100vh - 60px);
+	overflow-y: auto;
+	box-sizing: border-box;
+	padding: 1rem;
+}

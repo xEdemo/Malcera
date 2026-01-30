@@ -1,241 +1,277 @@
-const { Inventory, User, Item } = require('../models');
-const { StatusCodes } = require('http-status-codes');
+const asyncHandler = require("express-async-handler");
+const { Inventory, User, Item } = require("../models");
+const mongoose = require("mongoose");
+const { StatusCodes } = require("http-status-codes");
+const { INVENTORY_SLOTS } = require("../utils/enum.js");
 
-// @desc    Updates Inventory on Drag
+// ---------- helpers ----------
+const isValidIndex = (i) =>
+	Number.isInteger(i) && i >= 0 && i < INVENTORY_SLOTS;
+
+const toObjectIdOrNull = (v) => {
+	if (v === null || v === undefined || v === "") return null;
+
+	// If slot.item is populated, accept item._id
+	if (typeof v === "object" && v._id) v = v._id;
+
+	if (v instanceof mongoose.Types.ObjectId) return v;
+
+	if (typeof v === "string" && mongoose.isValidObjectId(v)) {
+		return new mongoose.Types.ObjectId(v);
+	}
+
+	return null;
+};
+
+const toSafeQty = (v) => {
+	if (v === null || v === undefined || v === "") return 0;
+
+	// accept numbers or numeric strings
+	const n = Number(v);
+	if (!Number.isFinite(n)) return 0;
+
+	return Math.max(0, Math.floor(n));
+};
+
+const sanitizeSlot = (raw) => {
+	const item = toObjectIdOrNull(raw?.item);
+
+	// accept both quantity and qty (client may still send qty)
+	const quantity = toSafeQty(raw?.quantity ?? raw?.qty);
+
+	// empty if no item OR non-positive qty
+	if (!item || quantity <= 0) return { item: null, quantity: 0 };
+
+	return { item, quantity };
+};
+
+const isEmptySlot = (slot) => !slot?.item || slot.quantity <= 0;
+
+const findFirstEmptySlotIndex = (slots) =>
+	slots.findIndex((s) => isEmptySlot(s));
+
+const ensureUserAndInventory = async (userId) => {
+	const user = await User.findById(userId);
+	if (!user) {
+		const err = new Error(`No user found with id ${userId}.`);
+		err.statusCode = StatusCodes.BAD_REQUEST;
+		throw err;
+	}
+
+	let inventory = null;
+	if (user.inventory) inventory = await Inventory.findById(user.inventory);
+
+	if (!inventory) {
+		// fallback if user.inventory missing
+		inventory = await Inventory.findOne({ user: userId });
+	}
+
+	if (!inventory) {
+		const err = new Error("Inventory not found for user.");
+		err.statusCode = StatusCodes.BAD_REQUEST;
+		throw err;
+	}
+
+	// normalize length
+	if (!Array.isArray(inventory.slots)) inventory.slots = [];
+	if (inventory.slots.length !== INVENTORY_SLOTS) {
+		const fixed = inventory.slots
+			.slice(0, INVENTORY_SLOTS)
+			.map((s) => sanitizeSlot(s));
+		while (fixed.length < INVENTORY_SLOTS)
+			fixed.push({ item: null, quantity: 0 });
+		inventory.slots = fixed;
+		await inventory.save();
+	}
+
+	return { user, inventory };
+};
+
+// ---------- controllers ----------
+
+// @desc    Updates Inventory on Drag (partial patch by indices)
 // @route   PUT /api/v1/inventory/on-drop
 // @access  Private
-const updateInventoryOnDrop = async (req, res) => {
-    const userId = req.user._id.toString();
-    const { updatedItems, changedIndices } = req.body;
+const updateInventoryOnDrop = asyncHandler(async (req, res) => {
+	const userId = req?.user?._id?.toString();
+	const fromIndex = Number(req.body.fromIndex);
+	const toIndex = Number(req.body.toIndex);
 
-    if (!updatedItems || !changedIndices) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No inventory data update provided.`);
-    }
+	if (!isValidIndex(fromIndex) || !isValidIndex(toIndex)) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Invalid indices.");
+	}
 
-    const user = await User.findById(userId);
+	if (fromIndex === toIndex) {
+		const { inventory } = await ensureUserAndInventory(userId);
+		return res.status(StatusCodes.OK).json({ inventory });
+	}
 
-    if (!user) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No user found with id ${userId}.`);
-    }
+	const { inventory } = await ensureUserAndInventory(userId);
 
-    const inventory = await Inventory.findById(user.inventory);
+	// swap
+	const temp = inventory.slots[fromIndex];
+	inventory.slots[fromIndex] = inventory.slots[toIndex];
+	inventory.slots[toIndex] = temp;
 
-    changedIndices.forEach((index) => {
-        inventory.slots[index] = updatedItems[index];
-    });
+	await inventory.save();
 
-    await inventory.save();
+	res.status(StatusCodes.OK).json({ inventory });
+});
 
-    res.status(StatusCodes.OK).json({ updatedInventory: inventory });
-};
-
-// @desc    Grabs Inventory
+// @desc    Grabs items from inventory for users
 // @route   GET /api/v1/inventory
 // @access  Private
-const getInventory = async (req, res) => {
-    const userId = req.user._id.toString();
-    const user = await User.findById(userId);
+const getInventory = asyncHandler(async (req, res) => {
+	const userId = req?.user?._id?.toString();
+	const { inventory } = await ensureUserAndInventory(userId);
 
-    if (!user) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No user found with id ${userId}.`);
-    }
+	// Optional but usually helpful for UI:
+	// Populate the item doc referenced by each slot.
+	await inventory.populate({
+		path: "slots.item",
+		select: "key name description image flags equip consumable weapon armour",
+	});
 
-    const inventory = await Inventory.findById(user.inventory);
-
-    res.status(StatusCodes.OK).json({ updatedInventory: inventory });
-};
+	res.status(StatusCodes.OK).json({ inventory });
+});
 
 // @desc    Splits a stackable item
 // @route   PUT /api/v1/inventory/split
 // @access  Private
-const splitStackableItem = async (req, res) => {
-    const userId = req.user._id.toString();
-    const { index, amount } = req.body;
+const splitStackableItem = asyncHandler(async (req, res) => {
+	const userId = req?.user?._id?.toString();
+	const index = Number(req.body.index);
+	const amount = Number(req.body.amount);
 
-    if (!amount) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No amount entered or an amount of 0 was enter.`);
-    }
+	if (!isValidIndex(index)) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Index is invalid.");
+	}
+	if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Please enter a valid whole number greater than zero.");
+	}
 
-    if (!Number.isInteger(amount) || amount <= 0) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            msg: 'Please enter a valid whole number greater than zero.',
-        });
-    }
+	const { inventory } = await ensureUserAndInventory(userId);
 
-    if (!Number.isInteger(index)) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`Index is not a number.`);
-    }
+	const slot = inventory.slots[index];
+	if (!slot?.item || slot.quantity <= 1) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Cannot split: slot is empty or quantity <= 1.");
+	}
 
-    const user = await User.findById(userId);
+	// check stackable from Item doc
+	const itemDoc = await Item.findById(slot.item).select("flags.stackable");
+	if (!itemDoc) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Item in slot no longer exists.");
+	}
+	if (!itemDoc.flags?.stackable) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("This item is not stackable, so it cannot be split.");
+	}
 
-    if (!user) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No user found with id ${userId}.`);
-    }
+	if (amount >= slot.quantity) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Split amount must be less than the slot quantity.");
+	}
 
-    const inventory = await Inventory.findById(user.inventory);
+	const emptyIndex = findFirstEmptySlotIndex(inventory.slots);
+	if (emptyIndex === -1) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("No empty slot found.");
+	}
 
-    const checkForEmpty = inventory.slots.some(
-        (item) => item.name === 'Empty Slot' || item === null
-    );
+	// move amount into empty slot, reduce original
+	inventory.slots[emptyIndex] = { item: slot.item, quantity: amount };
+	inventory.slots[index].quantity = slot.quantity - amount;
 
-    if (!checkForEmpty) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No empty slot found.`);
-    }
+	await inventory.save();
 
-    const emptySlotIndex = inventory.slots.findIndex(
-        (item) => item.name === 'Empty Slot' || item === null || !item.name
-    );
+	res.status(StatusCodes.OK).json({ inventory });
+});
 
-    const originalQuantity = inventory.slots[index].quantity;
-
-    if (originalQuantity <= 1) {
-        return res
-            .status(StatusCodes.BAD_REQUEST)
-            .json({ msg: `Cannot split a quantity less than one.` });
-    }
-
-    if (amount === originalQuantity) {
-        return res
-            .status(StatusCodes.OK)
-            .json({ msg: `Nothing changed on split.` });
-    }
-
-    const splitAmount = originalQuantity - amount;
-
-    // Step 1: Move the item from the original index to the empty slot
-    await Inventory.findByIdAndUpdate(
-        user.inventory,
-        { $set: { [`slots.${emptySlotIndex}`]: inventory.slots[index] } },
-        { new: true }
-    );
-
-    // Step 2: Update quantities for both indices
-    await Inventory.findByIdAndUpdate(
-        user.inventory,
-        { $set: { [`slots.${emptySlotIndex}.quantity`]: amount } },
-        { new: true }
-    );
-    await Inventory.findByIdAndUpdate(
-        user.inventory,
-        { $set: { [`slots.${index}.quantity`]: splitAmount } },
-        { new: true }
-    );
-
-    const updatedInventory = await Inventory.findById(user.inventory);
-
-    res.status(StatusCodes.OK).json({ updatedInventory });
-};
-
-// @desc    Combines Items on Drag
+// @desc    Combines Items on Drag (drag one stack onto another)
 // @route   PUT /api/v1/inventory/combine
 // @access  Private
-const combineStackableItems = async (req, res) => {
-    const userId = req.user._id.toString();
-    const { emptySlotIndex, combinedIndex } = req.body;
+const combineStackableItems = asyncHandler(async (req, res) => {
+	const userId = req?.user?._id?.toString();
+	const fromIndex = Number(req.body.fromIndex);
+	const toIndex = Number(req.body.toIndex);
 
-    if (isNaN(emptySlotIndex) || isNaN(combinedIndex)) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(
-            `There was an error fetching the indicies for combine.`
-        );
-    }
+	if (!isValidIndex(fromIndex) || !isValidIndex(toIndex)) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Invalid indices for combine.");
+	}
+	if (fromIndex === toIndex) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Cannot combine a slot into itself.");
+	}
 
-    const user = await User.findById(userId);
+	const { inventory } = await ensureUserAndInventory(userId);
 
-    if (!user) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No user found with id ${userId}.`);
-    }
+	const from = inventory.slots[fromIndex];
+	const to = inventory.slots[toIndex];
 
-    const inventory = await Inventory.findById(user.inventory);
+	if (isEmptySlot(from) || isEmptySlot(to)) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Both slots must contain an item to combine.");
+	}
 
-    if (
-        !inventory.slots[emptySlotIndex].stackable ||
-        !inventory.slots[combinedIndex].stackable
-    ) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(
-            'Both items, or one of the two items are not stackable.'
-        );
-    }
+	if (from.item.toString() !== to.item.toString()) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Items do not match (different item ids).");
+	}
 
-    if (
-        inventory.slots[emptySlotIndex].name !==
-        inventory.slots[combinedIndex].name
-    ) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error('Items do not match based on their names.')
-    }
+	const itemDoc = await Item.findById(from.item).select("flags.stackable");
+	if (!itemDoc) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Item no longer exists.");
+	}
+	if (!itemDoc.flags?.stackable) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Item is not stackable.");
+	}
 
-    const draggedQuantity = inventory.slots[emptySlotIndex].quantity;
+	// combine quantities
+	inventory.slots[toIndex].quantity += from.quantity;
 
-    const emptySlotId = '655ac0ef72adb7c251f09e80';
-    const emptySlotItem = await Item.findById(emptySlotId);
+	// clear from slot
+	inventory.slots[fromIndex] = { item: null, quantity: 0 };
 
-    if (!emptySlotItem) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error('Could not find empty slot item.');
-    }
+	await inventory.save();
 
-    const modifiedEmptySlotItem = { ...emptySlotItem.toObject(), item: emptySlotId }
-
-    inventory.slots[emptySlotIndex] = modifiedEmptySlotItem;
-
-    inventory.slots[combinedIndex].quantity += draggedQuantity;
-
-    await inventory.save();
-
-    res.status(StatusCodes.OK).json({ updatedInventory: inventory });
-};
+	res.status(StatusCodes.OK).json({ inventory });
+});
 
 // @desc    Removes an item from inventory
 // @route   PUT /api/v1/inventory/remove
 // @access  Private
-const removeItem = async (req, res) => {
-    const userId = req.user._id.toString();
-    const { index } = req.body;
+const removeItem = asyncHandler(async (req, res) => {
+	const userId = req?.user?._id?.toString();
+	const index = Number(req.body.index);
 
-    if (!Number.isInteger(index)) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`Index is not a number.`);
-    }
+	if (!isValidIndex(index)) {
+		res.status(StatusCodes.BAD_REQUEST);
+		throw new Error("Index is invalid.");
+	}
 
-    const user = await User.findById(userId);
+	const { inventory } = await ensureUserAndInventory(userId);
 
-    if (!user) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error(`No user found with id ${userId}.`);
-    }
+	inventory.slots[index] = { item: null, quantity: 0 };
+	await inventory.save();
 
-    const inventory = await Inventory.findById(user.inventory);
-
-    const emptySlotId = '655ac0ef72adb7c251f09e80';
-    const emptySlotItem = await Item.findById(emptySlotId);
-
-    if (!emptySlotItem) {
-        res.status(StatusCodes.BAD_REQUEST);
-        throw new Error('Could not find empty slot item.');
-    }
-
-    const modifiedEmptySlotItem = { ...emptySlotItem.toObject(), item: emptySlotId };
-    inventory.slots[index] = modifiedEmptySlotItem;
-
-    await inventory.save();
-
-    res.status(StatusCodes.OK).json({ msg: 'Item removed.' });
-};
+	res.status(StatusCodes.OK).json({
+		msg: "Item removed.",
+		inventory,
+	});
+});
 
 module.exports = {
-    updateInventoryOnDrop,
-    getInventory,
-    splitStackableItem,
-    combineStackableItems,
-    removeItem,
+	updateInventoryOnDrop,
+	getInventory,
+	splitStackableItem,
+	combineStackableItems,
+	removeItem,
 };

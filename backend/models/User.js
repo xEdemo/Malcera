@@ -115,9 +115,10 @@ const UserSchema = new mongoose.Schema(
 			position: {
 				type: {
 					x: { type: Number },
-					y: { type: Number },
+					z: { type: Number },
 				},
-				default: { x: 7, y: 10 },
+				default: {  x: 10, z: 7 },
+				_id: false,
 			},
 			currentMap: {
 				type: String,

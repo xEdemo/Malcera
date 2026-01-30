@@ -1,0 +1,74 @@
+.admin-sidebar-container {
+	height: 100vh;
+	background: var(--theme-background-secondary);
+	overflow-x: hidden;
+	width: 400px;
+	flex-shrink: 0;
+	transition: width 0.3s ease;
+}
+
+.admin-sidebar-container.closed {
+	width: 0;
+}
+
+.admin-sidebar-content {
+	width: 400px;
+	height: 100%;
+	padding: 2rem 1rem;
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	gap: 2rem;
+}
+
+.admin-sidebar-section {
+	text-align: left;
+}
+
+.admin-sidebar-api-links:hover,
+.admin-sidebar-api-links.active {
+	cursor: pointer;
+	animation: glowing 5s ease-in-out infinite;
+}
+
+.admin-sidebar-section-header {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	background: transparent;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.admin-sidebar-section-header h3 {
+	margin: 0;
+}
+
+.chev {
+	transition: transform 0.2s ease;
+}
+.chev.open {
+	transform: rotate(180deg);
+}
+
+.admin-sidebar-section-body {
+	overflow: hidden;
+	transition: max-height 0.1s ease, opacity 0.1s ease;
+	opacity: 1;
+}
+
+/* choose a max-height that safely fits your section */
+.admin-sidebar-section-body.open {
+	max-height: 400px;
+	margin-top: 0.5rem;
+	overflow: auto;
+}
+
+.admin-sidebar-section-body.closed {
+	max-height: 0;
+	opacity: 0;
+	margin-top: 0;
+}

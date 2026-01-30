@@ -1,7 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const { StatusCodes } = require("http-status-codes");
 const { User, Inventory, Item, Character } = require("../models");
-const { createJWT } = require("../utils");
+const { createJWT, addItemToInventory, ensureInventoryForUser } = require("../utils");
+const { EQUIP_SLOTS } = require("../utils/enum.js")
 
 // @desc    Sign Up a new user
 // route    POST /api/v1/user
@@ -9,7 +10,7 @@ const { createJWT } = require("../utils");
 const registerUser = asyncHandler(async (req, res) => {
 	const { username, email, password } = req.body;
 
-    const rawUsername = username.trim();
+	const rawUsername = username.trim();
 	const normalizedUsername = username.trim().toLowerCase();
 	const normalizedEmail = email.trim().toLowerCase();
 
@@ -32,13 +33,13 @@ const registerUser = asyncHandler(async (req, res) => {
 	const user = await User.create({
 		account: {
 			username: rawUsername,
-            normalizedUsername,
+			normalizedUsername,
 			email: normalizedEmail,
 			password,
 		},
 	});
 
-	const inventory = await Inventory.create({ user: user._id });
+	const inventory = await ensureInventoryForUser(user._id);
 	user.inventory = inventory._id;
 
 	const character = await Character.create({ user: user._id });
@@ -46,94 +47,28 @@ const registerUser = asyncHandler(async (req, res) => {
 
 	await user.save();
 
-	const hatchetId = "64cac3298525d56c05347d01";
-	const pickaxeId = "64cbdded7ebd956606da7694";
-	const breadCrumbsId = "6600b968511dd95ac667965f";
-	const emptySlotId = "655ac0ef72adb7c251f09e80";
+	const [hatchet, pickaxe, breadCrumbs, arrows] = await Promise.all([
+		Item.findOne({ key: "hatchet" }),
+		Item.findOne({ key: "pickaxe" }),
+		Item.findOne({ key: "bread-crumbs" }),
+		Item.findOne({ key: "arrows" }),
+	]);
 
-	const hatchetItem = await Item.findById(hatchetId);
-	const pickaxeItem = await Item.findById(pickaxeId);
-	const breadCrumbsItem = await Item.findById(breadCrumbsId);
-	const emptySlotItem = await Item.findById(emptySlotId);
+	if (!hatchet || !pickaxe || !breadCrumbs || !arrows) {
+		res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+		throw new Error("Starter items missing. Check Item keys / seeds.");
+	}
 
-	const numberOfStarterHatchets = 5;
-	const numberOfStarterPickaxes = 1;
-	const numberOfStarterBreadCrumbs = 50;
-
-	// Push starter items
-	const pushItem = (item, quantity) => {
-		if (item.stackable) {
-			inventory.slots.push({
-				item: item._id,
-				name: item.name,
-				description: item.description,
-				image: item.image,
-				quantity,
-				stackable: item.stackable,
-				consumable: item.consumable,
-				equippable: item.equippable,
-				equippableTo: item.equippableTo,
-				healAmount: item.healAmount,
-				armourRating: item.armourRating,
-				weaponPower: item.weaponPower,
-			});
-		} else {
-			for (let i = 0; i < quantity; i++) {
-				inventory.slots.push({
-					item: item._id,
-					name: item.name,
-					description: item.description,
-					image: item.image,
-					quantity: 1,
-					stackable: item.stackable,
-					consumable: item.consumable,
-					equippable: item.equippable,
-					equippableTo: item.equippableTo,
-					healAmount: item.healAmount,
-					armourRating: item.armourRating,
-					weaponPower: item.weaponPower,
-				});
-			}
-		}
-	};
-
-	pushItem(hatchetItem, numberOfStarterHatchets);
-	pushItem(pickaxeItem, numberOfStarterPickaxes);
-	pushItem(breadCrumbsItem, numberOfStarterBreadCrumbs);
-
-	const totalExistingItems = inventory.slots.filter(
-		(slot) => slot.item?.toString() !== emptySlotId
-	).length;
-	//console.log(totalExistingItems);
-
-	const emptySlotsNeeded = Math.max(0, 40 - totalExistingItems);
-	const emptySlots = Array.from({ length: emptySlotsNeeded }, () => ({
-		item: emptySlotId,
-		...emptySlotItem.toObject(),
-	}));
-	inventory.slots.push(...emptySlots);
+	addItemToInventory(inventory, hatchet, 5);
+	addItemToInventory(inventory, pickaxe, 1);
+	addItemToInventory(inventory, breadCrumbs, 50);
+	addItemToInventory(inventory, arrows, 50);
 
 	await inventory.save();
 
-	// Populate character slots
+	// character equipment init: empty
 	character.equipment = Object.fromEntries(
-		[
-			"helmet",
-			"neck",
-			"chest",
-			"greaves",
-			"boots",
-			"gauntlets",
-			"weaponRight",
-			"weaponLeft",
-			"handJewelryRight",
-			"handJewelryLeft",
-			"mantle",
-			"ammo",
-		].map((slot) => [
-			slot,
-			{ item: emptySlotId, ...emptySlotItem.toObject() },
-		])
+		EQUIP_SLOTS.map((slot) => [slot, { item: null, quantity: 0 }])
 	);
 
 	await character.save();
@@ -142,7 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
 		res.status(StatusCodes.CREATED).json({
 			_id: user._id,
 			username: user.account.username,
-		    email: user.account.email,
+			email: user.account.email,
 			inventory: user.inventory,
 			character: user.character,
 		});

@@ -1,0 +1,14 @@
+.admin-header-container {
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	padding: 0 1rem;
+	box-sizing: border-box;
+}
+
+.admin-sidebar-toggle:hover {
+	cursor: pointer;
+	color: var(--theme-yellow-o-300);
+}

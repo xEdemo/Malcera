@@ -1,0 +1,268 @@
+.item-image-preview {
+	width: 100%;
+	max-width: 320px;
+	height: 320px;
+	border: 1px solid var(--theme-grey-700);
+	border-radius: 8px;
+	margin: 0.75rem 0;
+}
+
+.item-image-preview.placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--theme-grey-400);
+}
+
+/* Layout container */
+.admin-form {
+	width: min(900px, 100%);
+	margin: 0 auto;
+	padding: 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.6rem;
+
+	background: var(--theme-background-secondary);
+	border: 1px solid var(--theme-grey-800);
+	border-radius: 14px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Field wrapper */
+.form-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+/* Labels */
+.form-label {
+	font-size: 1.25rem;
+	letter-spacing: 0.02em;
+	color: var(--theme-grey-200);
+}
+
+/* Inputs, textareas, selects */
+.form-input,
+.form-textarea,
+.form-select {
+	width: 100%;
+	box-sizing: border-box;
+
+	background: var(--theme-background-main);
+	color: var(--theme-grey-100);
+
+	border: 1px solid var(--theme-grey-800);
+	border-radius: 10px;
+
+	padding: 1rem 1.1rem;
+	font-size: 1.4rem;
+
+	transition: border-color 0.15s ease, box-shadow 0.15s ease,
+		background-color 0.15s ease;
+}
+
+/* Textarea specifics */
+.form-textarea {
+	resize: vertical;
+	min-height: 110px;
+}
+
+/* Multi-select: make it usable */
+.form-select[multiple] {
+	min-height: 140px;
+	padding: 0.8rem;
+}
+
+/* Placeholder styling */
+.form-input::placeholder,
+.form-textarea::placeholder {
+	color: var(--theme-grey-500);
+}
+
+/* Focus styling */
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+	outline: none;
+	border-color: var(--theme-blue-400);
+	box-shadow: 0 0 0 3px rgba(60, 77, 194, 0.35);
+}
+
+/* Disabled fields: visible but greyed out */
+.form-input:disabled,
+.form-textarea:disabled,
+.form-select:disabled {
+	background: var(--theme-grey-900);
+	color: var(--theme-grey-400);
+	border-color: var(--theme-grey-800);
+	cursor: not-allowed;
+	opacity: 1; /* keep visible */
+}
+
+/* Hints + errors */
+.form-hint {
+	font-size: 1.2rem;
+	color: var(--theme-grey-400);
+}
+
+.form-error {
+	font-size: 1.2rem;
+	color: var(--theme-red-200);
+	margin-top: 0.1rem;
+}
+
+/* Checkbox row */
+.admin-form-flags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.2rem;
+	padding: 0.25rem 0;
+}
+
+/* Checkbox style */
+.form-checkbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.7rem;
+
+	font-size: 1.3rem;
+	color: var(--theme-grey-200);
+	user-select: none;
+}
+
+.form-checkbox input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--theme-blue-400);
+}
+
+/* Section card */
+.form-section {
+	border: 1px solid var(--theme-grey-800);
+	border-radius: 12px;
+	padding: 1.4rem;
+	background: rgba(0, 0, 0, 0.15);
+}
+
+/* Legends */
+.form-section legend {
+	padding: 0 0.8rem;
+	font-size: 1.3rem;
+	color: var(--theme-grey-200);
+}
+
+/* Headings inside sections */
+.form-section h4 {
+	position: relative;
+
+	margin: 1.4rem 0 0.8rem;
+	padding-left: 1.2rem;
+
+	font-size: 1.2rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+
+	color: var(--theme-grey-200);
+}
+
+/* Vertical accent line */
+.form-section h4::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.1rem;
+
+	width: 3px;
+	height: 1.4rem;
+
+	background: linear-gradient(
+		to bottom,
+		var(--theme-blue-400),
+		var(--theme-blue-700)
+	);
+	border-radius: 2px;
+}
+
+/* When a section is disabled, dim but keep visible */
+.form-section:disabled {
+	opacity: 0.65;
+}
+
+/* Your hint should remain readable even when fieldset is disabled */
+.section-disabled-hint {
+	opacity: 1;
+	padding: 0.9rem 1rem;
+	border-radius: 10px;
+
+	background: rgba(11, 33, 179, 0.12);
+	border: 1px solid rgba(60, 77, 194, 0.35);
+
+	color: var(--theme-grey-200);
+	font-size: 1.2rem;
+	margin-bottom: 1rem;
+}
+
+/* Hide hint helper */
+.section-disabled-hint.hidden {
+	display: none;
+}
+
+/* Buttons */
+.form-button {
+	padding: 1rem 1.2rem;
+	border-radius: 12px;
+	border: 1px solid var(--theme-blue-600);
+
+	background: var(--theme-blue-700);
+	color: var(--theme-grey-100);
+
+	font-size: 1.4rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+
+	cursor: pointer;
+	transition: transform 0.08s ease, background-color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.form-button:hover {
+	background: var(--theme-blue-600);
+}
+
+.form-button:active {
+	transform: translateY(1px);
+}
+
+.form-button:disabled {
+	cursor: not-allowed;
+	background: var(--theme-grey-800);
+	border-color: var(--theme-grey-800);
+	color: var(--theme-grey-400);
+}
+
+/* Secondary button (image clear) */
+.form-button-secondary {
+	padding: 0.8rem 1rem;
+	border-radius: 10px;
+	border: 1px solid var(--theme-grey-700);
+
+	background: transparent;
+	color: var(--theme-grey-200);
+
+	font-size: 1.25rem;
+	cursor: pointer;
+	width: fit-content;
+}
+
+.form-button-secondary:hover {
+	border-color: var(--theme-grey-600);
+	color: var(--theme-grey-100);
+}
+
+/* Make the image upload input look nicer */
+input[type="file"].form-input {
+	padding: 0.8rem;
+}

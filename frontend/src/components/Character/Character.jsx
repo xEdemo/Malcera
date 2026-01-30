@@ -17,6 +17,25 @@ import itemImages from "../../utils/itemImages.js";
 import { useUnequipOnClickMutation } from "../../slices/character/characterApiSlice.js";
 import { toast } from "react-toastify";
 
+const ItemSlot = ({ item, itemQty, handleUnequipOnClick, slotId }) => {
+	return (
+		<>
+			<img
+				src={item?.image.url || itemImages[item?.name]}
+				alt={item?.name}
+				title={item?.description}
+				className="character-item-img"
+				onClick={() => handleUnequipOnClick(slotId)}
+			/>
+			{item?.flags?.stackable && (
+				<b className="inventory-quantity" style={{ top: "18px" }}>
+					{itemQty}
+				</b>
+			)}
+		</>
+	);
+};
+
 const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -45,8 +64,9 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 	};
 
 	const renderEquipmentSlot = (slotId) => {
-		const item = character?.equipment?.[slotId];
-		const isEmptySlot = item?.name === "Empty Slot";
+		const item = character?.equipment?.[slotId]?.item;
+		const itemQty = character?.equipment?.[slotId]?.quantity;
+		const isEmptySlot = item === null;
 
 		let slotComponent;
 
@@ -58,12 +78,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Ammo Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -74,12 +93,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Mantle Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -91,12 +109,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Right Weapon Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -107,12 +124,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Right Hand Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -123,12 +139,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Helmet Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -139,12 +154,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Necklace Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -155,12 +169,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Chest Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -171,12 +184,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Greave Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -187,12 +199,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Boot Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -203,12 +214,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Gauntlet Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -220,12 +230,11 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Left Weapon Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
@@ -236,23 +245,21 @@ const Character = ({ character, rerenderCharacter, rerenderInventory }) => {
 						title="Left Hand Slot"
 					/>
 				) : (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
 			default:
 				slotComponent = (
-					<img
-						src={itemImages[item?.name]}
-						alt={item?.name}
-						title={item?.description}
-						className="character-item-img"
-						onClick={() => handleUnequipOnClick(slotId)}
+					<ItemSlot
+						item={item}
+						itemQty={itemQty}
+						handleUnequipOnClick={handleUnequipOnClick}
+						slotId={slotId}
 					/>
 				);
 				break;
